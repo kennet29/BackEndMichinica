@@ -1,0 +1,28 @@
+<% for (let i = 0; i < cssPaths.length; i++) { %>
+    <link rel="stylesheet" type="text/css" href="<%= cssPaths[i] %>">
+  <% } %>
+
+<h1>403</h1>
+<div><p>> <span>ERROR CODE</span>: "<i>HTTP 403 Forbidden</i>"</p>
+<p>> <span>Descripcion de Error </span>: "<i>Acceso denegado. No tiene permiso para tener acceso a esta página en este servidor</i>"</p>
+<p>> <span>Error causado por:</span>: [<b>ejecutar acceso prohibido, acceso de lectura prohibido, acceso de escritura prohibido, ssl requerido, ssl 128 requerido, dirección IP rechazada, certificado de cliente requerido, acceso al sitio denegado, demasiados usuarios, configuración no válida, cambio de contraseña, asignador acceso denegado, certificado de cliente revocado, listado de directorios denegado, licencias de acceso de cliente. Se ha superado, el certificado de cliente no es de confianza o no es válido, el certificado de cliente ha caducado o aún no es válido, el inicio de sesión de Passport falló, se denegó el acceso de origen, se denegó la profundidad infinita, demasiadas solicitudes de la misma IP de cliente...</b>...]</p>
+<p>> <span>Intenta Iniciar Sesion Nuevamente</span>: [<a href="/">Login</a>]</p><p>> <span>Ten un bien Dia ATT:Kenneth :)</span></p>
+</div>
+
+<script>
+    var str = document.getElementsByTagName('div')[0].innerHTML.toString();
+var i = 0;
+document.getElementsByTagName('div')[0].innerHTML = "";
+
+setTimeout(function() {
+    var se = setInterval(function() {
+        i++;
+        document.getElementsByTagName('div')[0].innerHTML = str.slice(0, i) + "|";
+        if (i == str.length) {
+            clearInterval(se);
+            document.getElementsByTagName('div')[0].innerHTML = str;
+        }
+    }, 10);
+},0);
+
+</script>

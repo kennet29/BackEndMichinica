@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <% for (let i = 0; i < cssPaths.length; i++) { %>
+        <link rel="stylesheet" type="text/css" href="<%= cssPaths[i] %>">
+      <% } %>
+</head>
+<body>
+    <div class="cont">
+        <div class="cont_form">
+            <img src="<%= imagePath %>" alt="Logo">
+            <form id="loginForm" action="/login" method="post">
+                <input type="text" name="correo" placeholder="Correo electrónico">
+                <input type="password" name="contraseña" placeholder="Contraseña">
+                <input type="submit" class="btn btn-success" value="Iniciar Sesion">
+            </form> 
+        </div>
+    </div>
+    <script type="text/javascript" src="/js/login.js"> </script>
+    
+    
+
+</body>
+</html>

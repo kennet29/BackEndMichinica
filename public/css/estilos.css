@@ -1,0 +1,139 @@
+body {
+  background-image: linear-gradient(to right top, #d16ba5, #c777b9, #ba83ca, #aa8fd8, #9a9ae1, #8aa7ec, #79b3f4, #69bff8, #52cffe, #41dfff, #46eefa, #5ffbf1);
+    color: #ffffff;
+  }
+
+  .navbar-default {
+    background-color: #343a40;
+    border-color: #343a40;
+  }
+
+  .navbar-default .navbar-brand {
+    color: #ffffff;
+  }
+
+  .navbar-default .navbar-nav > li > a {
+    color: #ffffff;
+  }
+
+  .navbar-default .navbar-nav > li > a:hover,
+  .navbar-default .navbar-nav > li > a:focus {
+    background-color: #343a40;
+    color: #ffffff;
+  }
+
+  .navbar-default .navbar-nav > .active > a,
+  .navbar-default .navbar-nav > .active > a:hover,
+  .navbar-default .navbar-nav > .active > a:focus {
+    background-color: #343a40;
+    color: #ffffff;
+  }
+
+  .navbar-default .navbar-toggle {
+    border-color: #ffffff;
+  }
+
+  .navbar-default .navbar-toggle:hover,
+  .navbar-default .navbar-toggle:focus {
+    background-color: #343a40;
+  }
+
+  .dropdown-menu {
+    background-color: #343a40;
+  }
+
+  .dropdown-menu {
+    background-color: #343a40;
+}
+
+.dropdown-menu > li > a {
+    color: #ffffff;
+}
+
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+    background-color: #343a40;
+    color: #ffffff;
+}
+
+
+
+  .card {
+    background-color: rgb(41, 41, 41);
+    color: #ffffff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+  }
+
+  .card-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+  }
+
+  .card-title {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+
+  .card-description {
+    font-size: 14px;
+  }
+
+  .card-link {
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  .card-link:hover {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+
+
+  .footer {
+    background-color: #343a40;
+    padding: 20px 0;
+  }
+
+  .footer-content {
+    text-align: center;
+  }
+
+  .footer-title {
+    color: #ffffff;
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  .footer-item {
+    color: #ffffff;
+    font-size: 14px;
+    margin-bottom: 10px;
+    display: inline-block; /* Agregamos esta línea */
+    margin-right: 10px; /* Agregamos este margen para separar los iconos */
+  }
+  
+
+  .footer-item-link {
+    color: #ffffff;
+    text-decoration: none;
+  }
+
+  .footer-item-link:hover {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+
+  .footer-icon {
+    font-size: 24px;
+    margin-right: 5px;
+  }
+
+.button
+  {
+padding-left: 20px;
+
+
+  }

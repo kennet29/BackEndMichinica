@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Configuración</title>
+    <script src="https://kit.fontawesome.com/433c5e385c.js" crossorigin="anonymous"></script>
+    <% for (let i = 0; i < cssPaths.length; i++) { %>
+        <link rel="stylesheet" type="text/css" href="<%= cssPaths[i] %>">
+    <% } %>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a href="/index" class="back-button">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+        </div>
+        <div class="navbar-center">
+            <strong>
+                Modulo Configuracion
+            </strong>
+        </div>
+        <div class="navbar-right">
+            <a href="/login" class="logout-button">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+        </div>
+    </nav>
+    <fieldset class="container">
+        <legend>Configuracion</legend>
+        <form id="configForm">
+            <label for="direccion">Dirección:</label>
+            <input type="text" id="direccion" name="direccion"><br><br>
+
+            <label for="correoElectronico">Correo Electrónico:</label>
+            <input type="email" id="correoElectronico" name="correoElectronico"><br><br>
+
+            <label for="telefono1">Teléfono 1:</label>
+            <input type="tel" id="telefono1" name="telefono1"><br><br>
+
+            <label for="telefono2">Teléfono 2:</label>
+            <input type="tel" id="telefono2" name="telefono2"><br><br>
+
+            <label for="eslogan">Eslogan:</label>
+            <input type="text" id="eslogan" name="eslogan"><br><br>
+
+            <label for="tipoDeCambio">Tipo de Cambio  Dolar:</label>
+            <input type="number" id="tipoDeCambio" name="tipoDeCambio"><br><br>
+        </form>
+    </fieldset>
+    <button type="button" onclick="guardarCambios()"><i class="fa-solid fa-floppy-disk fa-beat fa-2xl"></i></button>
+
+    <footer class="footer-distributed">
+        <div class="footer-left">
+          <h3>Mafy<span style="font-style: italic;">Store</span></h3>
+          <p class="footer-links">
+            <a href="#">Home</a>
+            |
+            <a href="#">About</a>
+            |
+            <a href="#">Contact</a>
+            |
+            <a href="#">Blog</a>
+          </p>
+          <p class="footer-company-name">Copyright © 2023 <strong>Mafy Store</strong> All rights reserved</p>
+        </div>
+        <div class="footer-center">
+          <div>
+            <i class="fa fa-map-marker"></i>
+            <p><span>San Marcos</span> Carazo</p>
+          </div>
+          <div>
+            <i class="fa fa-phone"></i>
+            <p>+505 8888-8888</p>
+          </div>
+          <div>
+            <i class="fa fa-envelope"></i>
+            <p><a href="mailto:mafystore@gmail.com">mafystore@gmail.com</a></p>
+          </div>
+        </div>
+        <div class="footer-right">
+          <p class="footer-company-about">
+            <span>Acerca de Nosotros</span>
+            <strong>Mafy Store</strong> es una tienda en línea que ofrece una variedad de productos de moda y estilo.
+          </p>
+          <div class="footer-icons">
+            <a href="#"><i class="fa fa-facebook"></i></a>
+            <a href="#"><i class="fa fa-instagram"></i></a>
+            <a href="#"><i class="fa fa-linkedin"></i></a>
+            <a href="#"><i class="fa fa-twitter"></i></a>
+            <a href="#"><i class="fa fa-youtube"></i></a>
+          </div>
+        </div>
+    </footer>
+    <script src="/js/configuracion.js"></script>
+</body>
+</html>

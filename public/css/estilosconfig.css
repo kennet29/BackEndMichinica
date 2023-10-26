@@ -1,0 +1,74 @@
+fieldset
+{
+    font-size: 22px;
+    font-family: 'Roboto', cursive;
+    background-color: #4a4a4a;
+    color: aliceblue;
+    border-radius: 10px;
+}
+legend
+{
+    color:#e0ac1c;
+    font-size: 35px;
+}
+
+
+#configForm {
+    width: 90%;
+    height: 300px;
+    display: grid;
+   
+    grid-template-columns: repeat(6, 17%);
+    gap: 5px; /* Reducido el espacio entre las celdas */
+    grid-template-areas:
+      "label1 input1 ."
+      "label2 input2 ."
+      "label3 input3 ."
+      "label4 input4 ."
+      "label5 input5 ."
+      "label6 input6 ."
+      "button button button";
+  }
+  
+  label {
+    grid-column: span 1;
+     /* Reduce el espacio inferior de las etiquetas */
+  }
+  
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"] {
+    width: 250px;
+    height: 35px;
+     /* Reduce el espacio inferior de los campos de entrada */
+  }
+  
+ 
+  
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto;
+    max-width: 75%;
+  }
+  
+  input {
+    border-radius: 5px;
+  }
+  
+  button {
+    width: 70px;
+    height: 50px;
+    border-radius: 5px;
+    margin-left: 50%;
+    margin-top: 2%;
+    background-color: darkred;
+    color:white;
+  }
+  
+body{
+  background-image: linear-gradient(to right top, #e309b4, #9a77ff, #00a9ff, #00cbff, #12e2eb);
+}
+
