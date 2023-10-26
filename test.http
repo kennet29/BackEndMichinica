@@ -1,0 +1,12 @@
+GET  http://localhost:3000/api/configuracion/
+Content-Type: application/json
+
+{
+  "nombre_negocio": "Mi Negocio",
+  "direccion": "Mi Dirección",
+  "correo_electronico": "correo@example.com",
+  "telefono_1": 1234567890,
+  "telefono_2": 9876543210,
+  "eslogan": "¡El mejor negocio en la ciudad!",
+  "tipo_de_cambio_dolar": 1.5
+}
