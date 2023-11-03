@@ -42,8 +42,6 @@ export const updateArticuloById = async (req, res) => {
 export const deleteArticuloById = async (req, res) => {
   const { id } = req.params;
 
-  
-
   try {
     await Articulo.findByIdAndRemove(id);
     res.json({ message: 'Artículo eliminado correctamente.' });
