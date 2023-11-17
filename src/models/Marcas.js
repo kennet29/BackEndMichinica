@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+
 const marcaSchema = new mongoose.Schema(
   {
    

@@ -1,12 +1,24 @@
-GET  http://localhost:3000/api/configuracion/
+post  http://localhost:4000/api/stock/
 Content-Type: application/json
 
 {
-  "nombre_negocio": "Mi Negocio",
-  "direccion": "Mi Dirección",
-  "correo_electronico": "correo@example.com",
-  "telefono_1": 1234567890,
-  "telefono_2": 9876543210,
-  "eslogan": "¡El mejor negocio en la ciudad!",
-  "tipo_de_cambio_dolar": 1.5
+  "Id_articulo": "653ab4cb1e6f1d90a34eeedd",
+  "Id_usuario": "652b4bac458db698d7db1485",
+  "Id_color": "653744eab09832b768cf7951",
+  "Id_marca": "65397854f61f76fdbd7a75a6",
+  "Id_talla": "6553cee79eccd6bd1e094d8a",
+  "Id_estilo": "6538455331cd3a7e40f25a4c",
+  "Id_material": "65397e758ea6f6749bdd92b9",
+  "Id_diseño": "6537deb60a5f571f04eae0c7",
+  "Descuento": 10, 
+  "Descuento_maximo": 20, 
+  "Id_bodega": "653741bba1907a79cf7a9a86",
+  "Costo": 50.5, 
+  "Precio_venta": 75.99, 
+  "Estado": true,
+  "Daños": false,
+  "Descripcion": "Descripción del stock",
+  "Id_ingreso": "6553cfe89eccd6bd1e094d91",
+  "Cod_barra": 123456789, 
+  "Id_promocion": "6553df179eccd6bd1e094d96"
 }

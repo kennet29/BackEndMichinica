@@ -1,4 +1,4 @@
-@api = http://localhost:4000/api/auth
+@api = http://localhost:3000/api/auth
 
 ### Signin
 POST {{api}}/signin

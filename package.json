@@ -26,12 +26,18 @@
     "supertest": "^6.3.3"
   },
   "dependencies": {
+    "ajax": "^0.0.4",
+    "axios": "^1.6.1",
     "bcryptjs": "^2.4.3",
+    "bootstrap": "^5.3.2",
     "cors": "^2.8.5",
+    "datatables.net": "^1.13.7",
+    "datatables.net-bs4": "^1.13.7",
     "dotenv": "^16.3.1",
     "ejs": "^3.1.9",
     "express": "^4.18.2",
     "helmet": "^7.0.0",
+    "jquery": "^3.7.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.6.3",
     "morgan": "^1.10.0"

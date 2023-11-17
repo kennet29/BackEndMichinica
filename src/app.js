@@ -20,6 +20,10 @@ import marcasroutes from "./routes/marcas.routes.js";
 import proveedoresroutes from "./routes/proveedores.routes.js"
 import tallasroutes from "./routes/tallas.routes.js"
 import artículosroutes from "./routes/articulos.routes.js"
+import mercanciaroutes from "./routes/mercancia.routes.js";
+import stockroutes from "./routes/stock.routes.js"
+import ingresosroutes from "./routes/ingresos.routes.js";
+import DetallesVentaroutes from "./routes/detallesventa.routes.js";
 
 
 const app = express();
@@ -30,8 +34,19 @@ app.set('view engine','ejs');
 app.set("json spaces", 4);
 app.use(express.static('public'))
 app.use(express.static('public/js/bootstrap'))
-
-// Middlewares
+app.use(express.static('public/js/jquery'))
+app.use(express.urlencoded({ extended: false }));
+app.use((req, res, next) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    next();
+  });
+  app.use((req, res, next) => {
+    res.setHeader(
+      'Content-Security-Policy',
+      "script-src 'self' https://cdn.datatables.net; object-src 'self'"
+    );
+    return next();
+  });
 app.use(cors());
 app.use(morgan("dev"))
 app.use(helmet());
@@ -42,12 +57,12 @@ app.use(express.urlencoded({ extended: false }));
 
 // Routes
 app.use("/api", indexRoutes);
-
+app.use("/api/mercancia",mercanciaroutes);
 app.use("/api/products", productRoutes);
-app.use("/api/users", usersRoutes);
+app.use("/api/user", usersRoutes);
 app.use("/api/auth", authRoutes);
 
-app.use("/api/color",coloresroutes);
+app.use("/api/colores",coloresroutes);
 app.use("/api/marcas",marcasroutes);
 app.use("/api/materiales",materialesroutes);
 app.use("/api/bodegas",bodegasroutes);
@@ -60,7 +75,9 @@ app.use("/api/promociones",promocionesroutes);
 app.use("/api/proveedores",proveedoresroutes);
 app.use("/api/tallas",tallasroutes);
 app.use("/api/articulos",artículosroutes);
-
+app.use("/api/stock",stockroutes);
+app.use("/api/ingresos",ingresosroutes);
+app.use("/api/detalleventa",DetallesVentaroutes);
 
 
 

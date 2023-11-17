@@ -3,7 +3,8 @@ import {
   crearColor,
   mostrarColores,
   editarColor,
-  eliminarColor
+  eliminarColor,
+ 
 } from "../controllers/colores.controller.js";
 
 import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
