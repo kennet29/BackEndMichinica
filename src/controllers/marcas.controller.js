@@ -1,13 +1,4 @@
 import Marca from "../models/Marcas.js";
-export const getMarcas = async (req, res) => {
-  try {
-    res.render('marcas.ejs', {
-      cssPaths: ['/css/estilo-footer.css','/css/extras.css' ]
-    });
-  } catch (error) {
-    res.status(500).send(error.message);
-  }
-};
 
 
 export const getAllMarcas = async (req, res) => {
