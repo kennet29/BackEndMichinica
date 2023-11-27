@@ -1,10 +1,9 @@
 import { Router } from "express";
 import {
-
-  getAllMarcas,
-  DeleteMarcas,
-  CreateMarca,
-  UpdateMarca
+getAllMarcas,
+DeleteMarcas,
+CreateMarca,
+UpdateMarca
 } from "../controllers/marcas.controller.js";
 import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 

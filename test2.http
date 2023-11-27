@@ -1,12 +1,12 @@
-GET http://localhost:4000/api/promociones/
+POST http://localhost:4000/api/promociones/
 Content-Type: application/json
 
 {
-  "id_usuario": "652b4bac458db698d7db1485",
-  "id_proveedor": "6553cd889eccd6bd1e094d6e",
-  "fecha": "2023-11-13T12:00:00Z",  
-  "iva": 10,
-  "descuento": 5,
-  "subtotal": 100,
-  "total": 105
+  "promocion": "Nombre de la Promoción",
+  "fecha_inicio": "2023-11-26T00:00:00.000Z",
+  "fecha_final": "2023-12-31T23:59:59.999Z",
+  "descuento": 10,
+  "descripcion": "Descripción de la promoción",
+  "estado": true,
+  "cantidad_Articulos": 100
   }
