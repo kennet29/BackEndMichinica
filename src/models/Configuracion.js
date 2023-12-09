@@ -5,6 +5,7 @@ const configuracionSchema = new mongoose.Schema(
     nombre_negocio: {
       type: String,
       required: true,
+      trim: true,
     },
     direccion: {
       type: String,
@@ -31,10 +32,8 @@ const configuracionSchema = new mongoose.Schema(
       required: true,
     },
   },
-  {
-    timestamps: true,
-    versionKey: false,
-  }
+ 
 );
 
 export default mongoose.model("Configuracion", configuracionSchema);
+

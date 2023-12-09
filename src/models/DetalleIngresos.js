@@ -48,7 +48,7 @@ const detalleIngresosSchema = new mongoose.Schema(
           type: Number,
           required: true,
         },
-        precio_proovedor: {
+        precio_proveedor: {
           type: Number,
           required: true,
         },

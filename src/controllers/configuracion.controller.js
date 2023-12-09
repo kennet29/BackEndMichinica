@@ -1,14 +1,6 @@
 import Configuracion from "../models/Configuracion.js";
 
-export const getConfiguracion = async (req, res) => {
-  try {
-    res.render('configuraciones', { 
-      cssPaths: ['/css/estilo-footer.css','/css/extras.css','/css/estilosconfig.css' ]
-    });
-  } catch (error) {
-    res.status(500).send(error.message);
-  }
-};
+
 
 export const crearConfiguracion = async (req, res) => {
   try {

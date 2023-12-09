@@ -1,12 +1,38 @@
-POST http://localhost:4000/api/promociones/
+POST http://localhost:4000/api/detalleingreso
 Content-Type: application/json
 
 {
-  "promocion": "Nombre de la Promoción",
-  "fecha_inicio": "2023-11-26T00:00:00.000Z",
-  "fecha_final": "2023-12-31T23:59:59.999Z",
-  "descuento": 10,
-  "descripcion": "Descripción de la promoción",
-  "estado": true,
-  "cantidad_Articulos": 100
-  }
+  "id_ingreso": "6553cfe89eccd6bd1e094d91",
+  "articulos": [
+    {
+      "id_articulo": "653ab4cb1e6f1d90a34eeedd",
+      "id_talla": "655e4da76dbf4be9182cbda2",
+      "id_color": "65601ef976584e56eb300af9",
+      "id_marca": "65601f7476584e56eb300afd",
+      "id_material": "655d8ed9c5f155274db21303",
+      "id_estilo": "6566ae821693e94218aabf14",
+      "id_diseño": "6537dfc30a5f571f04eae0d3",
+      "cantidad": 5,
+      "precio_proveedor": 10.5,
+      "iva": 1.5,
+      "descuento": 2.0,
+      "subtotal": 45.0
+    },
+    {
+      "id_articulo": "653ab4cb1e6f1d90a34eeedd",
+      "id_talla": "655e4da76dbf4be9182cbda2",
+      "id_color": "65601ef976584e56eb300af9",
+      "id_marca": "65601f7476584e56eb300afd",
+      "id_material": "655d8ed9c5f155274db21303",
+      "id_estilo": "6566ae821693e94218aabf14",
+      "id_diseño": "6537dfc30a5f571f04eae0d3",
+      "cantidad": 10,
+      "precio_proveedor": 10.5,
+      "iva": 1.5,
+      "descuento": 2.0,
+      "subtotal": 45.0
+    }
+  ],
+  "total": 45.0
+}
+
