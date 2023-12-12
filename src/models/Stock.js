@@ -53,9 +53,8 @@ const stockSchema = new Schema({
   Id_bodega: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Bodega",
-    required: true,
-  },
-  Costo: {
+  },  
+  Precio_prov: {
     type: Number,
     required: true
   },
@@ -65,15 +64,15 @@ const stockSchema = new Schema({
   },
   Estado: {
     type: Boolean,
-    required: true
+    
   },
   Daños: {
     type: Boolean,
-    required: true
+   
   },
   Descripcion: {
     type: String,
-    required: true
+    
   },
   Id_ingreso: {
     type: mongoose.Schema.Types.ObjectId,
@@ -82,12 +81,11 @@ const stockSchema = new Schema({
   },
   Cod_barra: {
     type: Number,
-    required: true
+    
   },
   Id_promocion: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Promocion",
-    required: true,
   },
 },
 {

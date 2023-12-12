@@ -1,4 +1,4 @@
-post  http://localhost:4000/api/stock/
+POST   http://localhost:4000/api/stock/
 Content-Type: application/json
 
 {
@@ -13,7 +13,7 @@ Content-Type: application/json
   "Descuento": 10, 
   "Descuento_maximo": 20, 
   "Id_bodega": "653741bba1907a79cf7a9a86",
-  "Costo": 50.5, 
+  "Precio_prov": 50.5, 
   "Precio_venta": 75.99, 
   "Estado": true,
   "Daños": false,
