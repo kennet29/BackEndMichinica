@@ -1,4 +1,4 @@
-POST http://localhost:4000/api/provee
+delete http://localhost:4000/api/stock/6577c4661f1d9c345056edf2
 Content-Type: application/json
 
 {
