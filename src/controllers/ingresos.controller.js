@@ -1,4 +1,9 @@
 import Ingresos from "../models/Ingresos.js";
+import fs from 'fs';
+import PDFDocument from 'pdfkit';
+
+
+
 
 export const getAllIngresos = async (req, res) => {
     try {
@@ -43,4 +48,20 @@ export const updateIngresoById = async (req, res) => {
       res.status(500).json({ message: error.message });
     }
   };
+
   
+  export const getIngresoById = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const ingreso = await Ingresos.findById(id);
+
+        if (!ingreso) {
+            return res.status(404).json({ message: 'Ingreso not found' });
+        }
+
+        res.status(200).json(ingreso);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

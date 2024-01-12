@@ -4,6 +4,7 @@ import {
   createNewDetIngresos,
   updateDetIngresoById,
   deleteDetIngresoByID,
+
 } from "../controllers/detalleIngresos.controller.js";
 
 import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
@@ -21,5 +22,6 @@ router.put("/:id",  updateDetIngresoById);
 
 // Ruta para eliminar un detalle de ingresos por su ID
 router.delete("/:id",  deleteDetIngresoByID);
+
 
 export default router;

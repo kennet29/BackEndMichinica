@@ -1,6 +1,6 @@
 import Color from "../models/Colores.js";
 
-;
+
 export const crearColor = async (req, res) => {
   try {
     const nuevoColor = await Color.create(req.body);
@@ -44,3 +44,18 @@ export const eliminarColor = async (req, res) => {
   }
 };
 
+// Controlador para obtener un color por su ID
+export const obtenerColorPorId = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const color = await Color.findById(id);
+    
+    if (!color) {
+      return res.status(404).json({ error: "Color no encontrado" });
+    }
+
+    res.status(200).json(color);
+  } catch (error) {
+    res.status(500).json({ error: "No se pudo obtener el color" });
+  }
+};

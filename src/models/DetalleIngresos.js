@@ -14,6 +14,11 @@ const detalleIngresosSchema = new mongoose.Schema(
           ref: 'Articulo',
           required: true,
         },
+        id_categoria: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Categoria',
+          required: true,
+        },
         id_talla: {
           type: mongoose.Schema.Types.ObjectId,
           ref: 'Talla',

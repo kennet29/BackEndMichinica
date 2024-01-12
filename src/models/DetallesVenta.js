@@ -14,6 +14,11 @@ const detallesVentaSchema = new mongoose.Schema(
           ref: 'Articulo',
           required: true,
         },
+        id_categoria:{
+          type:mongoose.Schema.Types.ObjectId,
+          ref:'Categoria',
+          required:true,
+        },
         id_marca: {
           type: mongoose.Schema.Types.ObjectId,
           ref: 'Marca',
@@ -44,6 +49,10 @@ const detallesVentaSchema = new mongoose.Schema(
           ref: 'Diseño',
           required: true,
         },
+        id_promocion:{
+          type:mongoose.Schema.Types.ObjectId,
+          ref:'Promocion',
+        },
         cantidad: {
           type: Number,
           required: true,
@@ -53,10 +62,6 @@ const detallesVentaSchema = new mongoose.Schema(
           required: true,
         },
         subtotal: {
-          type: Number,
-          required: true,
-        },
-        iva: {
           type: Number,
           required: true,
         },

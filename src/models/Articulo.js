@@ -16,11 +16,6 @@ const articuloSchema = new mongoose.Schema(
       type: Boolean,
       required: true,
     },
-    categoria: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Categoria', // Aquí debes utilizar el nombre del modelo de Categoría
-      required: true,
-    },
   },
   {
     timestamps: true,

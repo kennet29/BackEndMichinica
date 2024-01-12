@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Stock from "../models/Stock.js";
 
+
 export const getAllStock = async (req, res) => {
   try {
     const allStock = await Stock.find();
@@ -10,16 +11,20 @@ export const getAllStock = async (req, res) => {
   }
 };
 
-export const updateStockByID = async (req, res) => {
-  const { id } = req.params;
-  const { fieldToUpdate } = req.body;
-  try {
-    if (!mongoose.Types.ObjectId.isValid(id))
-      return res.status(404).send(`No stock item with id: ${id}`);
 
-    const updatedStock = await Stock.findByIdAndUpdate(id, fieldToUpdate, {
-      new: true
-    });
+
+export const updateExistenciasByID = async (req, res) => {
+  const { id } = req.params;
+  const { Existencias } = req.body; // Assuming you want to update the Existencias field
+
+  try {
+    
+
+    const updatedStock = await Stock.findByIdAndUpdate(
+      id,
+      { Existencias },
+      { new: true }
+    );
 
     res.json(updatedStock);
   } catch (error) {

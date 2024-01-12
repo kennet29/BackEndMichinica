@@ -1,4 +1,4 @@
-POST http://localhost:4000/api/detalleventa
+GET http://localhost:4000/api/articulos/
 Content-Type: application/json
 
 {

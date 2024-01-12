@@ -1,0 +1,6 @@
+get http://localhost:4000/api/detalleventa/659e1e1326319c673325544f/print
+Content-Type: application/json
+
+{
+  "Existencias": 50
+}

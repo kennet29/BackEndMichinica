@@ -25,6 +25,7 @@ import stockroutes from "./routes/stock.routes.js"
 import ingresosroutes from "./routes/ingresos.routes.js";
 import DetallesVentaroutes from "./routes/detallesventa.routes.js";
 import DetalleIngresos from "./routes/detalle.ingresos.routes.js";
+import Ventasroutes from "./routes/ventas.routes.js";
 
 
 const app = express();
@@ -80,6 +81,7 @@ app.use("/api/stock",stockroutes);
 app.use("/api/ingresos",ingresosroutes);
 app.use("/api/detalleventa",DetallesVentaroutes);
 app.use("/api/detalleingreso",DetalleIngresos);
+app.use("/api/ventas",Ventasroutes);
 
 
 

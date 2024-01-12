@@ -14,11 +14,7 @@ const ventasSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    iva: {
-      type: Number,
-      required: true,
-    },
-    subtotal: {
+     subtotal: {
       type: Number,
       required: true,
     },

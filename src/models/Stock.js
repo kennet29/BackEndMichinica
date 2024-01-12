@@ -7,6 +7,11 @@ const stockSchema = new Schema({
     ref: "Articulo",
     required: true,
   },
+  Id_categoria:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Categoria",
+    required: true,
+  },
   Id_usuario: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -61,6 +66,10 @@ const stockSchema = new Schema({
   Precio_venta: {
     type: Number,
     required: true
+  },
+  Existencias:{
+type: Number,
+required:true
   },
   Estado: {
     type: Boolean,

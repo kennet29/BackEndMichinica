@@ -2,7 +2,7 @@ import { Router } from "express";
 import {
   getAllStock,
   createNewStock,
-  updateStockByID
+  updateExistenciasByID
 } from "../controllers/stock.controller.js";
 
 import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
@@ -13,7 +13,7 @@ router.get("/", getAllStock);
 
 router.post("/",  createNewStock);
 
-router.put("/:id",  updateStockByID);
+router.put("/:id",  updateExistenciasByID);
 
 
 export default router;

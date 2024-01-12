@@ -4,6 +4,7 @@ import {
   mostrarColores,
   editarColor,
   eliminarColor,
+  obtenerColorPorId
  
 } from "../controllers/colores.controller.js";
 
@@ -12,7 +13,7 @@ const router = Router();
 
 // Ruta para obtener todos los colores
 router.get("/", mostrarColores);
-
+router.get("/:id", obtenerColorPorId);
 // Ruta para crear un nuevo color
 router.post("/",  crearColor);
 
@@ -21,5 +22,6 @@ router.put("/:id",  editarColor);
 
 // Ruta para eliminar un color por su ID
 router.delete("/:id",  eliminarColor);
+
 
 export default router;
