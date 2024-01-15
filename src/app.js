@@ -36,6 +36,8 @@ app.set('view engine','ejs');
 app.set("json spaces", 4);
 app.use(express.static('public'))
 app.use(express.static('public/js/bootstrap'))
+app.use(express.static('public/images'))
+app.use(express.static('src/controllers'))
 app.use(express.static('public/js/jquery'))
 app.use(express.urlencoded({ extended: false }));
 app.use((req, res, next) => {

@@ -1,7 +1,8 @@
 import DetallesVenta from "../models/DetallesVenta.js";
-import PDFDocument from 'pdfkit';
-import fs from 'fs';
-// Obtener todos los detalles de ventas
+import puppeteer from 'puppeteer';
+import Configuracion from "../models/Configuracion.js";
+
+
 export const getAllDetVentas = async (req, res) => {
   try {
     const detallesVentas = await DetallesVenta.find();
@@ -11,7 +12,7 @@ export const getAllDetVentas = async (req, res) => {
   }
 };
 
-// Crear un nuevo detalle de venta
+
 export const createNewDetVentas = async (req, res) => {
   const detallesVenta = req.body;
 
@@ -23,7 +24,6 @@ export const createNewDetVentas = async (req, res) => {
   }
 };
 
-// Actualizar detalles de ventas por ID
 export const updateDetVentasById = async (req, res) => {
   const { id } = req.params;
   const detallesVenta = req.body;
@@ -41,119 +41,121 @@ export const updateDetVentasById = async (req, res) => {
   }
 };
 
-// Eliminar detalles de ventas por ID
-export const deleteDetallesVentasByID = async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    await DetallesVenta.findByIdAndRemove(id);
-    res.status(204).json({ message: "Detalles de ventas eliminados correctamente" });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
-
-
-
 export const printDetallesVenta = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Fetch details of sales from the database with populated references
     const detallesVenta = await DetallesVenta.findById(id)
-      .populate({
-        path: 'id_ventas', // Assuming the reference field in DetallesVenta is named 'id_ventas'
-        model: 'Ventas',
-        select: 'cliente createdAt total', // Add other fields as needed
-      })
-      .populate({
-        path: 'articulos.id_articulo',
-        model: 'Articulo',
-        select: 'nombre',
-      })
-      .populate({
-        path: 'articulos.id_color',
-        model: 'Color',
-        select: 'color',
-      })
-      .populate({
-        path: 'articulos.id_categoria',
-        model: 'Categoria',
-        select: 'categoria',
-      })
-      .populate({
-        path: 'articulos.id_marca',
-        model: 'Marca',
-        select: 'marca',
-      })
-      .populate({
-        path: 'articulos.id_material',
-        model: 'Material',
-        select: 'material',
-      })
-      .populate({
-        path: 'articulos.id_diseño',
-        model: 'Diseno',
-        select: 'diseno',
-      });
+   
+    .populate({
+      path: 'id_ventas',
+      model: 'Ventas',
+      select: 'cliente createdAt total',
+    })
+    .populate({
+      path: 'articulos.id_articulo',
+      model: 'Articulo',
+      select: 'nombre',
+    })
+    .populate({
+      path: 'articulos.id_color',
+      model: 'Color',
+      select: 'color',
+    })
+    .populate({
+      path: 'articulos.id_talla',
+      model: 'Talla',
+      select: 'talla',
+    })
+    .populate({
+      path: 'articulos.id_marca',
+      model: 'Marca',
+      select: 'marca',
+    });
 
     if (!detallesVenta) {
       return res.status(404).json({ message: 'Detalles de ventas no encontrados' });
     }
 
-    // Create a PDF document
-    const doc = new PDFDocument();
 
-    // Set response headers for PDF download
+    const configuracion = await Configuracion.findOne(); // Fetching the configuration data
+
+    // Check if both detallesVenta and configuracion exist
+    if (!detallesVenta || !configuracion) {
+      return res.status(404).json({ message: 'Data not found' });
+    }
+    // Iniciar un navegador Puppeteer
+    const browser = await puppeteer.launch({ headless: false });
+    const page = await browser.newPage();
+    
+
+    // Construir el contenido del PDF
+    const content = `
+    <html>
+      <head>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+      </head>
+      <body>
+        <div style="font-size: 10px; border: 1px solid black; width:280px; text-align:center"> 
+        <i class="fas fa-tshirt" style="width: 100px; height: 60px; color: black;font-size:50px;margin-top:5px"></i>
+
+          <p style="font-size:23px; text-align:center">Mafy Store <p>
+          <p style="font-size: 14px;">ID-Factura </br> ${detallesVenta._id}</p>
+          <p style="font-size: 12px;">Fecha: ${new Date(detallesVenta.id_ventas.createdAt).toLocaleString('es-ES') } </br>  Cliente: ${detallesVenta.id_ventas.cliente} </p>
+        
+          <table style="width:95%; border-collapse: collapse; margin:0 auto">
+            <tr>
+              <th style=" text-align: left; font-size: 14px;">Artículos</th>
+              <th style=" text-align: left; font-size: 14px;"> Precio</th>
+              <th style=" text-align: center; font-size: 14px;"> Cant.</th>
+              <th style=" text-align: left; font-size: 14px;"> Subtotal</th>
+            </tr>
+            ${detallesVenta.articulos.map(articulo => `
+              <tr>
+                <td style="border: text-align: left; font-size: 12px;">
+                  ${articulo.id_articulo.nombre}  
+                  ${articulo.id_color.color}  
+                  ${articulo.id_marca.marca}  
+                  ${articulo.id_talla.talla}
+                </td>
+                <td style="border: text-align: left; font-size: 12px;">${articulo.precio.toFixed(2)}</td>
+                <td style="border: text-align: rigth; font-size: 12px;">${articulo.cantidad}</td>
+                <td style="border: text-align: left; font-size: 12px;">${articulo.subtotal.toFixed(2)}</td>
+              </tr>
+            `).join('')}
+          </table>
+          
+          <p style="font-size: 12px;">Total: ${detallesVenta.id_ventas.total.toFixed(2)}</p>
+          <p style="font-size: 12px;">Dirección: ${configuracion.direccion}</p>
+          <p style="font-size: 12px;">E-Mail: ${configuracion.correo_electronico}</p>
+          <p style="font-size: 12px;">Teléfono 1: ${configuracion.telefono_1}  Teléfono 2: ${configuracion.telefono_2}</p>
+
+          <p style="font-size:23px; text-align:center">¡Gracias por su Compra!<p>
+        </div>
+      </body>
+    </html>
+  `;
+  
+
+
+
+
+    // Generar el PDF
+  // Add a delay before generating the PDF
+await page.setContent(content);
+await page.waitForTimeout(1000); // Adjust the delay time as needed
+const pdfBuffer = await page.pdf();
+
+    // Cerrar el navegador
+    await browser.close();
+
+    // Enviar el PDF como respuesta
     res.setHeader('Content-Disposition', `attachment; filename=detallesVenta_${id}.pdf`);
     res.setHeader('Content-Type', 'application/pdf');
+    res.status(200).send(pdfBuffer);
 
-    // Pipe the PDF to the Express response
-    doc.pipe(res);
-
-    // Format the date
-    const formattedDate = new Date(detallesVenta.id_ventas.createdAt).toLocaleString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-
-    // Add content to the PDF (customize this based on your needs)
-    doc.text(`ID-Factura: ${detallesVenta._id}`);
-    doc.text(`Fecha : ${formattedDate}`);
-    doc.text(`Cliente : ${detallesVenta.id_ventas.cliente}`);
-
-    // Add table header
-    doc.moveDown();
-    doc.text('Artículos', { underline: true });
-
-    // Iterate through the articulos array and add details to the table
-    detallesVenta.articulos.forEach((articulo, index) => {
-      doc.moveDown();
-      doc.text(
-        `Artículo #${index + 1}\n` +
-        ` ${articulo.id_articulo.nombre}` +
-        ` ${articulo.id_categoria.categoria}` +
-        ` ${articulo.id_color.color}` +
-        ` ${articulo.id_marca.marca}` +
-        ` ${articulo.id_material.material}` +
-        ` ${articulo.id_diseño.diseno}\n` +
-        `Cantidad: ${articulo.cantidad} ` +
-        `Precio ${articulo.precio} ` +
-        `Subtotal${articulo.subtotal}`
-      );
-    });
-
-    // Show total outside the loop
-    doc.text(`Total: ${detallesVenta.id_ventas.total}`);
-
-    // End the document
-    doc.end();
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ message: 'Error generating PDF' });
   }
 };

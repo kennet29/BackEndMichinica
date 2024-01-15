@@ -1,4 +1,4 @@
-get http://localhost:4000/api/detalleventa/659e1e1326319c673325544f/print
+get http://localhost:4000/api/detalleventa/659e212c26319c67332554da/print
 Content-Type: application/json
 
 {
