@@ -13,10 +13,10 @@ import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js"; /
 const router = Router();
 
 router.get("/", getAllBodega); // Use getAllBodega instead of getBodega for fetching all bodegas
-router.post("/", createNewBodega); // Create a new bodega
+router.post("/",[verifyToken,isModerator], createNewBodega); // Create a new bodega
 router.get("/:id", getBodegaById); // Get a specific bodega by its ID
-router.delete("/:id", deleteBodegaById); // Delete a bodega by its ID
+router.delete("/:id",[verifyToken,isModerator], deleteBodegaById); // Delete a bodega by its ID
 router.get("/total", getTotalBodegas); // Get the total number of bodegas
-router.put("/:id", updateBodegaById); // Update a specific bodega by its ID
+router.put("/:id",[verifyToken,isModerator], updateBodegaById); // Update a specific bodega by its ID
 
 export default router;

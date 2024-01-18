@@ -11,10 +11,11 @@ import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 const router = Router();
 
 router.get("/", getAllArticulos);
-router.post("/", createNewArticulo);
-router.put("/:id", updateArticuloById);
-router.delete("/:id", deleteArticuloById);
 router.get("/:id",obtenerArticuloPorId);
+router.post("/",[verifyToken,isModerator], createNewArticulo);
+router.put("/:id",[verifyToken,isModerator], updateArticuloById);
+router.delete("/:id",[verifyToken,isAdmin], deleteArticuloById);
+
 
 
 export default router;

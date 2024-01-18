@@ -2,8 +2,8 @@ POST  http://localhost:4000/api/articulos/
 Content-Type: application/json
 
 {
-  "nombre": "es una material",
-  "descripcion":"ajajja",
+  "nombre": "Articulo",
+  "descripcion":"descripcion",
   "estado": true
 
  

@@ -10,20 +10,12 @@ import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 
 const router = Router();
 
-// Rutas para obtener todos los proveedores
+
 router.get("/", getAllProveedores);
-
-// Ruta para crear un nuevo proveedor
-router.post("/", createNewProveedor);
-
-// Ruta para obtener un proveedor por su ID
+router.post("/",[verifyToken,isModerator], createNewProveedor);
 router.get("/:id", getProveedorById);
-
-// Ruta para eliminar un proveedor por su ID
-router.delete("/:id", deleteProveedorById);
-
-// Ruta para actualizar un proveedor por su ID
-router.put("/:id", updateProveedorById);
+router.delete("/:id",[verifyToken,isAdmin], deleteProveedorById);
+router.put("/:id",[verifyToken,isModerator], updateProveedorById);
 
 export default router;
 

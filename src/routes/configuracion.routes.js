@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { editarConfiguracion, verConfiguraciones, crearConfiguracion } from "../controllers/configuracion.controller.js";
-
+import { verifyToken,isAdmin } from "../middlewares/authJwt.js"; 
 const router = Router();
 
-router.post("/", crearConfiguracion); // Ruta para crear una nueva configuración
-router.get("/", verConfiguraciones); // Ruta para ver todas las configuraciones
-router.put("/:id", editarConfiguracion); // Ruta para editar la primera configuración
+router.post("/", crearConfiguracion);
+router.get("/", verConfiguraciones);
+router.put("/:id", editarConfiguracion);
 
 export default router;

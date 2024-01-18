@@ -6,13 +6,15 @@ import {
   deleteCategoriaById,
   createCategoria,
 } from "../controllers/categorias.controller.js";
+import { isAdmin,isModerator,verifyToken } from "../middlewares/authJwt.js";
 
 const router = Router();
 
-router.get("/:categoriaId", getCategoriaById);
+
 router.get("/", getAllCategorias);
-router.post("/", createCategoria);
-router.put("/:categoriaId", updateCategoriaById);
-router.delete("/:categoriaId", deleteCategoriaById);
+router.get("/:categoriaId", getCategoriaById);
+router.post("/",[verifyToken,isModerator], createCategoria);
+router.put("/:categoriaId",[verifyToken,isModerator], updateCategoriaById);
+router.delete("/:categoriaId",[verifyToken,isAdmin], deleteCategoriaById);
 
 export default router;

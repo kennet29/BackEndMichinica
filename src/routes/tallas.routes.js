@@ -4,16 +4,9 @@ import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 
 const router = Router();
 
-// Ruta para obtener todas las tallas
 router.get("/", getAllTallas);
-
-// Ruta para crear una nueva talla
-router.post("/", createNewTalla);
-
-// Ruta para eliminar una talla por su ID
-router.delete("/:id", deleteTallaById);
-
-// Ruta para actualizar una talla por su ID
-router.put("/:id", updateTallaById);
+router.post("/",[verifyToken,isModerator], createNewTalla);
+router.delete("/:id",[verifyToken,isAdmin], deleteTallaById);
+router.put("/:id",[verifyToken,isModerator], updateTallaById);
 
 export default router;

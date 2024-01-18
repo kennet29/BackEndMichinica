@@ -97,7 +97,7 @@ export const printDetallesVenta = async (req, res) => {
       </head>
       <body>
         <div style="font-size: 10px; border: 1px solid black; width:280px; text-align:center"> 
-        <i class="fas fa-tshirt" style="width: 100px; height: 60px; color: black;font-size:50px;margin-top:5px"></i>
+       
 
           <p style="font-size:23px; text-align:center">Mafy Store <p>
           <p style="font-size: 14px;">ID-Factura </br> ${detallesVenta._id}</p>
@@ -129,7 +129,7 @@ export const printDetallesVenta = async (req, res) => {
           <p style="font-size: 12px;">Dirección: ${configuracion.direccion}</p>
           <p style="font-size: 12px;">E-Mail: ${configuracion.correo_electronico}</p>
           <p style="font-size: 12px;">Teléfono 1: ${configuracion.telefono_1}  Teléfono 2: ${configuracion.telefono_2}</p>
-
+            <p style="font-size:12px; text-align:center">Precios incluyen IVA<p>
           <p style="font-size:23px; text-align:center">¡Gracias por su Compra!<p>
         </div>
       </body>
