@@ -12,6 +12,24 @@ export const getAllStock = async (req, res) => {
 };
 
 
+export const updateStockByID = async (req, res) => {
+  const { id } = req.params;
+  const updatedFields = req.body; // Assuming you want to update all fields
+
+  try {
+    const updatedStock = await Stock.findByIdAndUpdate(
+      id,
+      updatedFields,
+      { new: true }
+    );
+
+    res.json(updatedStock);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 
 export const updateExistenciasByID = async (req, res) => {
   const { id } = req.params;
@@ -42,3 +60,5 @@ export const createNewStock = async (req, res) => {
     res.status(409).json({ message: error.message });
   }
 };
+
+

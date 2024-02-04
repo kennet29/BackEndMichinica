@@ -7,14 +7,14 @@ export const signupHandler = async (req, res) => {
   try {
     const { username, email, password, roles } = req.body;
 
-    // Creating a new User Object
+    // Crear un nuevo objeto de usuario
     const newUser = new User({
       username,
       email,
       password,
     });
 
-    // checking for roles
+    // Verificar roles
     if (roles) {
       const foundRoles = await Role.find({ name: { $in: roles } });
       newUser.roles = foundRoles.map((role) => role._id);
@@ -23,15 +23,14 @@ export const signupHandler = async (req, res) => {
       newUser.roles = [role._id];
     }
 
-    // Saving the User Object in Mongodb
+
     const savedUser = await newUser.save();
 
-    // Create a token
-    const token = jwt.sign({ id: savedUser._id }, SECRET, {
-      expiresIn: 86400, // 24 hours
-    });
+   const token = jwt.sign({ id: savedUser._id }, SECRET, {
+  expiresIn: '10', 
+});
 
-    return res.status(200).json({ token });
+    return res.status(200).json({ token, _id: savedUser._id });
   } catch (error) {
     return res.status(500).json(error.message);
   }
@@ -39,12 +38,12 @@ export const signupHandler = async (req, res) => {
 
 export const signinHandler = async (req, res) => {
   try {
-    // Request body email can be an email or username
+ 
     const userFound = await User.findOne({ email: req.body.email }).populate(
       "roles"
     );
 
-    if (!userFound) return res.status(400).json({ message: "User Not Found" });
+    if (!userFound) return res.status(400).json({ message: "Usuario no encontrado" });
 
     const matchPassword = await User.comparePassword(
       req.body.password,
@@ -54,15 +53,62 @@ export const signinHandler = async (req, res) => {
     if (!matchPassword)
       return res.status(401).json({
         token: null,
-        message: "Invalid Password",
+        message: "Contraseña inválida",
       });
 
+ 
     const token = jwt.sign({ id: userFound._id }, SECRET, {
-      expiresIn: 86400, // 24 hours
+      expiresIn: '10', 
     });
 
-    res.json({ token });
+    res.json({ token, _id: userFound._id });
   } catch (error) {
     console.log(error);
+    res.status(500).json(error.message);
   }
 };
+
+const blacklist = new Map();
+
+const invalidateToken = (userId, tokenToInvalidate) => {
+  if (!blacklist.has(userId)) {
+    blacklist.set(userId, new Set());
+  }
+  blacklist.get(userId).add(tokenToInvalidate);
+};
+
+export const logoutHandler = async (req, res) => {
+  let tokenToInvalidate;
+
+  try {
+    tokenToInvalidate = req.headers['x-access-token'];
+
+    if (!tokenToInvalidate) {
+      return res.status(400).json({ message: "Token not provided in the header" });
+    }
+
+    const decodedToken = jwt.verify(tokenToInvalidate, SECRET);
+    const userId = decodedToken.id;
+
+    if (blacklist.has(userId) && blacklist.get(userId).has(tokenToInvalidate)) {
+      return res.status(401).json({ message: "Token already invalidated, session closed", originalToken: tokenToInvalidate, decodedToken });
+    }
+
+    // Perform additional actions upon logging out if necessary
+    // For example, closing the session in the database for traditional sessions (not applicable to JWTs)
+
+    invalidateToken(userId, tokenToInvalidate);
+
+    res.status(200).json({ message: "Session closed successfully", invalidatedToken: tokenToInvalidate, originalToken: tokenToInvalidate, decodedToken, userId });
+  } catch (error) {
+    console.error(error);
+
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ message: "Token expired, session closed", originalToken: tokenToInvalidate });
+    }
+
+    // Handle other types of errors gracefully
+    res.status(500).json({ message: "Error while logging out", originalToken: tokenToInvalidate, error: error.message });
+  }
+};
+

@@ -1,7 +1,7 @@
 {
-  "name": "company-products-api",
+  "name": "api-mafy",
   "version": "0.0.2",
-  "description": "A Company REST API with authentication and authorization",
+  "description": "API CRUD",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
@@ -10,16 +10,16 @@
     "test": "jest"
   },
   "repository": {
-    "type": "git",
-    "url": "git+https://github.com/FaztWeb/company-products-api.git"
+    "type": "git"
+    
   },
   "keywords": [],
   "author": "Fazt",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/FaztWeb/company-products-api/issues"
+ 
   },
-  "homepage": "https://github.com/FaztWeb/company-products-api#readme",
+ 
   "devDependencies": {
     "jest": "^29.7.0",
     "nodemon": "^3.0.1",

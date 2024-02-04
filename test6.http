@@ -1,6 +1,13 @@
-get http://localhost:4000/api/detalleventa/659e212c26319c67332554da/print
+PUT http://localhost:4000/api/user/65bbc4b358cb923ba4c7f89d
 Content-Type: application/json
 
 {
-  "Existencias": 50
+  "username": "Testeadossadsasddsadsadxxx",
+  "email": "otrasssasassadsagfdgfxxxx",
+  "password": "12345678",
+  "roles": [
+    "652b4bac458db698d7db147f",
+    "652b4bac458db698d7db1480",
+    "652b4bac458db698d7db1481"
+  ]
 }

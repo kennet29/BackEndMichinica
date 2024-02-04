@@ -4,6 +4,7 @@ import {
   createNewDetIngresos,
   updateDetIngresoById,
   deleteDetIngresoByID,
+  printDetalleIngresos
 
 } from "../controllers/detalleIngresos.controller.js";
 
@@ -12,6 +13,7 @@ import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 const router = Router();
 
 // Ruta para obtener todos los detalles de ingresos
+router.get("/:id/print",printDetalleIngresos)
 router.get("/",  getAllDetIngresos);
 
 // Ruta para crear un nuevo detalle de ingresos

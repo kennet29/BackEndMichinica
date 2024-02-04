@@ -59,3 +59,59 @@ export const  getRoleNameById = async (req, res) => {
       res.status(500).json({ message: 'Error interno del servidor' });
     }
   };
+
+ // Importaciones necesarias, como Role y User models
+
+ export const updateUser = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const { username, email, password, roles } = req.body;
+
+    // Verificar si se proporcionaron roles y encontrar sus IDs
+    let rolesToUpdate = [];
+    if (roles && roles.length > 0) {
+      const rolesFound = await Role.find({ _id: { $in: roles } });
+
+      // Verificar si se encontraron todos los roles proporcionados
+      if (rolesFound.length !== roles.length) {
+        return res.status(404).json({ message: 'Uno o más roles no encontrados' });
+      }
+
+      rolesToUpdate = rolesFound.map((role) => role._id);
+    }
+
+
+    const updatedUser = {
+      username,
+      email,
+
+      password: password ? await User.encryptPassword(password) : undefined,
+    };
+
+
+    if (rolesToUpdate.length > 0) {
+      updatedUser.roles = rolesToUpdate;
+    }
+
+
+    delete updatedUser._id;
+
+   
+    const result = await User.findByIdAndUpdate(userId, updatedUser, { new: true });
+
+   
+    if (!result) {
+      return res.status(404).json({ message: 'Error al actualizar el usuario' });
+    }
+
+    return res.status(200).json({
+      _id: result._id,
+      username: result.username,
+      email: result.email,
+      roles: result.roles,
+    });
+  } catch (error) {
+    console.error('Error al editar el usuario:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};

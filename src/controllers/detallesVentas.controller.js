@@ -78,18 +78,18 @@ export const printDetallesVenta = async (req, res) => {
     }
 
 
-    const configuracion = await Configuracion.findOne(); // Fetching the configuration data
+    const configuracion = await Configuracion.findOne(); 
 
-    // Check if both detallesVenta and configuracion exist
+
     if (!detallesVenta || !configuracion) {
       return res.status(404).json({ message: 'Data not found' });
     }
-    // Iniciar un navegador Puppeteer
+
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
     
 
-    // Construir el contenido del PDF
+  
     const content = `
     <html>
       <head>
@@ -135,21 +135,14 @@ export const printDetallesVenta = async (req, res) => {
       </body>
     </html>
   `;
-  
 
-
-
-
-    // Generar el PDF
-  // Add a delay before generating the PDF
 await page.setContent(content);
-await page.waitForTimeout(1000); // Adjust the delay time as needed
+await page.waitForTimeout(1000); 
 const pdfBuffer = await page.pdf();
 
-    // Cerrar el navegador
-    await browser.close();
+await browser.close();
 
-    // Enviar el PDF como respuesta
+
     res.setHeader('Content-Disposition', `attachment; filename=detallesVenta_${id}.pdf`);
     res.setHeader('Content-Type', 'application/pdf');
     res.status(200).send(pdfBuffer);
