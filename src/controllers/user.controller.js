@@ -41,7 +41,16 @@ export const getUser = async (req, res) => {
   const user = await User.findById(req.params.userId);
   return res.json(user);
 };
+export const getUserNames = async (req, res) => {
+  try {
+    const users = await User.find({}, '_id username'); // Retrieve only _id and username fields
 
+    return res.status(200).json(users.map(user => ({ _id: user._id, username: user.username })));
+  } catch (error) {
+    console.error('Error al obtener los nombres de usuario:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
 
 export const  getRoleNameById = async (req, res) => {
     try {

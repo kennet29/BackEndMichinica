@@ -27,7 +27,7 @@ export const signupHandler = async (req, res) => {
     const savedUser = await newUser.save();
 
    const token = jwt.sign({ id: savedUser._id }, SECRET, {
-  expiresIn: '10', 
+  expiresIn: '1d', 
 });
 
     return res.status(200).json({ token, _id: savedUser._id });
@@ -58,7 +58,7 @@ export const signinHandler = async (req, res) => {
 
  
     const token = jwt.sign({ id: userFound._id }, SECRET, {
-      expiresIn: '10', 
+      expiresIn: '1d', 
     });
 
     res.json({ token, _id: userFound._id });

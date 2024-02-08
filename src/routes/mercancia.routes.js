@@ -14,7 +14,7 @@ const router = Router();
 router.get("/", getAllMerc_dañada); // Use getAllBodega instead of getBodega for fetching all bodegas
 router.post("/", createNewMerc_dañada); // Create a new bodega
 router.get("/:id",getMerc_dañadaByID); // Get a specific bodega by its ID
-router.delete("/:id", deleteMerc_dañadaById); // Delete a bodega by its ID
-router.put("/:id", updateMerc_dañadaById); // Update a specific bodega by its ID
+router.delete("/:id",[verifyToken,isAdmin], deleteMerc_dañadaById); // Delete a bodega by its ID
+router.put("/:id",[verifyToken,isAdmin], updateMerc_dañadaById); // Update a specific bodega by its ID
 
 export default router;

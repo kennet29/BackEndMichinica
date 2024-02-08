@@ -14,7 +14,7 @@ const router = Router();
 
 router.get("/", mostrarColores);
 router.get("/:id", obtenerColorPorId);
-router.post("/",[verifyToken,isModerator],  crearColor);
+router.post("/",[verifyToken,isAdmin],  crearColor);
 router.put("/:id",[verifyToken,isModerator],  editarColor);
 router.delete("/:id",[verifyToken,isAdmin],  eliminarColor);
 

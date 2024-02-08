@@ -3,7 +3,7 @@ config();
 
 export const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/test";
 export const PORT = process.env.PORT || 4000;
-export const SECRET = "MAFYSTORE";
+export const SECRET = "MAFYSTORE1234";
 
 
 export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@localhost";

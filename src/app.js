@@ -28,6 +28,7 @@ import DetalleIngresos from "./routes/detalle.ingresos.routes.js";
 import Ventasroutes from "./routes/ventas.routes.js";
 
 
+
 const app = express();
 
 // Settings
@@ -65,6 +66,7 @@ app.use("/api/mercancia",mercanciaroutes);
 app.use("/api/products", productRoutes);
 app.use("/api/user", usersRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/mercancia",mercanciaroutes);
 
 app.use("/api/colores",coloresroutes);
 app.use("/api/marcas",marcasroutes);
