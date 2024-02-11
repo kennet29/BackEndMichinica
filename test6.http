@@ -1,18 +1,15 @@
-Get http://localhost:4000/api/user/652b4bac458db698d7db1485
+post http://localhost:4000/api/configuracion/
 Content-Type: application/json
 
+
 {
- "id_stock": "65a2f7c4882c0cd8342236c7",
-  "id_articulo": "65a2f4f0923e9ac2a2cf4fcd",
-  "id_usuario": "652b4bac458db698d7db1485",
-  "Fecha": "2024-02-05T12:00:00.000Z",
-  "id_categoria": "6585d067f8cb50dfa8178b78",
-  "id_marca": "6566b2191693e94218aabf71",
-  "id_talla": "6590a7a09917203af877da15",
-  "id_color": "65836529c193d1da56be7afc",
-  "id_ingreso": "65a2f7c4882c0cd8342236c2",
-  "Cantidad": 5,
-  "Daños": "Descripción de los daños",
-  "Estado": true,
-  "Descripcion": "Descripción de la mercancía dañada"
+  "nombre_negocio": "Mi Negocio",
+  "direccion": "Calle Principal 123",
+  "correo_electronico": "correo@example.com",
+  "telefono_1": 123456789,
+  "telefono_2": 987654321,
+  "eslogan": "La mejor tienda",
+  "tipo_de_cambio_dolar": 20.5
 }
+
+
