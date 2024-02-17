@@ -1,5 +1,6 @@
 import DetallesVenta from "../models/DetallesVenta.js";
 import puppeteer from 'puppeteer';
+
 import Configuracion from "../models/Configuracion.js";
 
 
@@ -68,10 +69,8 @@ export const printDetallesVenta = async (req, res) => {
 
     const browser = await puppeteer.launch({
       headless: "new", // Cambio a la nueva implementación Headless
-      executablePath: 'C:\\Users\\kenne\\.cache\\puppeteer\\chrome\\win64-119.0.6045.105\\chrome-win64\\chrome.exe',
       // Otras opciones de configuración según sea necesario
     });
-
     const page = await browser.newPage();
 
     const content = `
