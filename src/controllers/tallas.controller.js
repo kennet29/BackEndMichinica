@@ -7,7 +7,7 @@ export const getTallas = async (req, res) => {
     });
   } catch (error) {
     res.status(500);
-    // res.send(error.message);
+
   }
 };
 export const createNewTalla = async (req, res) => {
@@ -19,7 +19,6 @@ export const createNewTalla = async (req, res) => {
   }
 };
 
-// Controlador para mostrar todas las tallas
 export const getAllTallas = async (req, res) => {
   try {
     const tallas = await Talla.find();
@@ -29,7 +28,6 @@ export const getAllTallas = async (req, res) => {
   }
 };
 
-// Controlador para editar una talla por su ID
 export const updateTallaById = async (req, res) => {
   const { id } = req.params;
   try {
@@ -42,7 +40,7 @@ export const updateTallaById = async (req, res) => {
   }
 };
 
-// Controlador para eliminar una talla por su ID
+
 export const deleteTallaById = async (req, res) => {
   const { id } = req.params;
   try {
