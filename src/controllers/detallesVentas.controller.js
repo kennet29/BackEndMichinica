@@ -24,23 +24,6 @@ export const createNewDetVentas = async (req, res) => {
   }
 };
 
-export const updateDetVentasById = async (req, res) => {
-  const { id } = req.params;
-  const detallesVenta = req.body;
-
-  try {
-    const updatedDetallesVenta = await DetallesVenta.findByIdAndUpdate(
-      id,
-      detallesVenta,
-      { new: true }
-    );
-
-    res.status(200).json(updatedDetallesVenta);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
 export const printDetallesVenta = async (req, res) => {
   const { id } = req.params;
 
@@ -84,12 +67,13 @@ export const printDetallesVenta = async (req, res) => {
     }
 
     const browser = await puppeteer.launch({
+      headless: "new", // Cambio a la nueva implementación Headless
       executablePath: 'C:\\Users\\kenne\\.cache\\puppeteer\\chrome\\win64-119.0.6045.105\\chrome-win64\\chrome.exe',
       // Otras opciones de configuración según sea necesario
     });
 
     const page = await browser.newPage();
-    
+
     const content = `
     <html>
       <head>
