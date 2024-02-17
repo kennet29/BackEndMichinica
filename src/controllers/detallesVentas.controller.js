@@ -85,7 +85,8 @@ export const printDetallesVenta = async (req, res) => {
       return res.status(404).json({ message: 'Data not found' });
     }
 
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch({ headless: true });
+
     const page = await browser.newPage();
     
 
