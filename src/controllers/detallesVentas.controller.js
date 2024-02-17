@@ -13,6 +13,24 @@ export const getAllDetVentas = async (req, res) => {
   }
 };
 
+export const updateDetVentasById = async (req, res) => {
+  const { id } = req.params;
+  const detallesVenta = req.body;
+
+  try {
+    const updatedDetallesVenta = await DetallesVenta.findByIdAndUpdate(
+      id,
+      detallesVenta,
+      { new: true }
+    );
+
+    res.status(200).json(updatedDetallesVenta);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+
 
 export const createNewDetVentas = async (req, res) => {
   const detallesVenta = req.body;
@@ -25,55 +43,50 @@ export const createNewDetVentas = async (req, res) => {
   }
 };
 
+import pdf from 'html-pdf';
+
 export const printDetallesVenta = async (req, res) => {
   const { id } = req.params;
 
   try {
     const detallesVenta = await DetallesVenta.findById(id)
-   
-    .populate({
-      path: 'id_ventas',
-      model: 'Ventas',
-      select: 'cliente createdAt total',
-    })
-    .populate({
-      path: 'articulos.id_articulo',
-      model: 'Articulo',
-      select: 'nombre',
-    })
-    .populate({
-      path: 'articulos.id_color',
-      model: 'Color',
-      select: 'color',
-    })
-    .populate({
-      path: 'articulos.id_talla',
-      model: 'Talla',
-      select: 'talla',
-    })
-    .populate({
-      path: 'articulos.id_marca',
-      model: 'Marca',
-      select: 'marca',
-    });
+      .populate({
+        path: 'id_ventas',
+        model: 'Ventas',
+        select: 'cliente createdAt total',
+      })
+      .populate({
+        path: 'articulos.id_articulo',
+        model: 'Articulo',
+        select: 'nombre',
+      })
+      .populate({
+        path: 'articulos.id_color',
+        model: 'Color',
+        select: 'color',
+      })
+      .populate({
+        path: 'articulos.id_talla',
+        model: 'Talla',
+        select: 'talla',
+      })
+      .populate({
+        path: 'articulos.id_marca',
+        model: 'Marca',
+        select: 'marca',
+      });
 
     if (!detallesVenta) {
       return res.status(404).json({ message: 'Detalles de ventas no encontrados' });
     }
 
-    const configuracion = await Configuracion.findOne(); 
+    const configuracion = await Configuracion.findOne();
 
     if (!configuracion) {
       return res.status(404).json({ message: 'Configuración no encontrada' });
     }
 
-    const browser = await puppeteer.launch({
-      headless: "new", // Cambio a la nueva implementación Headless
-      // Otras opciones de configuración según sea necesario
-    });
-    const page = await browser.newPage();
-
-    const content = `
+    const contentPart1 = `
     <html>
       <head>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -104,6 +117,8 @@ export const printDetallesVenta = async (req, res) => {
               </tr>
             `).join('')}
           </table>
+    `;
+    const contentPart2 = `
           <p style="font-size: 12px;">Total: ${detallesVenta.id_ventas.total.toFixed(2)}</p>
           <p style="font-size: 12px;">Dirección: ${configuracion.direccion}</p>
           <p style="font-size: 12px;">E-Mail: ${configuracion.correo_electronico}</p>
@@ -115,18 +130,30 @@ export const printDetallesVenta = async (req, res) => {
     </html>
     `;
 
-    await page.setContent(content);
-    await page.waitForTimeout(1000); 
-    const pdfBuffer = await page.pdf();
+    const pdfOptions = {
+      format: 'Letter',
+      border: {
+        top: '10mm',
+        right: '10mm',
+        bottom: '10mm',
+        left: '10mm',
+      },
+    };
 
-    await browser.close();
-
-    res.setHeader('Content-Disposition', `attachment; filename=detallesVenta_${id}.pdf`);
-    res.setHeader('Content-Type', 'application/pdf');
-    res.status(200).send(pdfBuffer);
-
+    pdf.create(contentPart1 + contentPart2, pdfOptions).toBuffer((err, buffer) => {
+      if (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error generando el PDF' });
+      } else {
+        res.setHeader('Content-Disposition', `attachment; filename=detallesVenta_${id}.pdf`);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.status(200).send(buffer);
+      }
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error generando el PDF' });
   }
 };
+
+
