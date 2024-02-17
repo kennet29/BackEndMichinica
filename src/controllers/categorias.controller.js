@@ -66,19 +66,28 @@ export const deleteCategoriaById = async (req, res) => {
 export const createCategoria = async (req, res) => {
   const { categoria, descripcion, estado } = req.body;
 
+  // Verificar si la categoría ya existe
   try {
+    const categoriaExistente = await Categoria.findOne({ categoria });
+
+    if (categoriaExistente) {
+      // Si la categoría ya existe, enviar un mensaje de error
+      return res.status(400).json({ message: 'La categoría ya existe.' });
+    }
+
+    // Si la categoría no existe, crear una nueva
     const newCategoria = new Categoria({
       categoria,
       descripcion,
       estado
-      
     });
 
-    const CategoriaSaved = await newCategoria.save();
+    const categoriaSaved = await newCategoria.save();
 
-    res.status(201).json(CategoriaSaved);
+    res.status(201).json(categoriaSaved);
   } catch (error) {
+    // Manejar errores durante la consulta o al intentar guardar la categoría
     console.log(error);
-    return res.status(500).json(error);
+    return res.status(500).json({ message: error.message });
   }
 };

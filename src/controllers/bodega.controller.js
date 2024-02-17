@@ -22,13 +22,19 @@ export const getAllBodega = async (req, res) => {
 
 export const createNewBodega = async (req, res) => {
   const { bodega, descripcion, estado } = req.body;
+
   try {
+    const bodegaExistente = await Bodega.findOne({ bodega });
+    if (bodegaExistente) {
+      return res.status(400).json({ message: 'La bodega ya existe.' });
+    }
     const newBodega = await Bodega.create({ bodega, descripcion, estado });
     res.status(201).json(newBodega);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 export const getBodegaById = async (req, res) => {
   const { id } = req.params;
