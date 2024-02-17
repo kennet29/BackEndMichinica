@@ -14,9 +14,9 @@ router.get("/", getAllVentas);
 
 router.get("/:id", getVentaById);
 
-router.post("/",  createNewVenta);
+router.post("/",[verifyToken,isModerator],  createNewVenta);
 
-router.put("/:id",  updateVentasById);
+router.put("/:id",[verifyToken,isModerator],  updateVentasById);
 
 
 export default router;

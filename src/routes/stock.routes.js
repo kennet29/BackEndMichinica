@@ -12,12 +12,12 @@ const router = Router();
 
 router.get("/", getAllStock);
 
-router.post("/", createNewStock);
+router.post("/", createNewStock,[verifyToken,isModerator]);
 
 // Ruta para actualizar solo el campo Existencias
-router.put("/:id", updateExistenciasByID);
+router.put("/:id",[verifyToken,isModerator], updateExistenciasByID);
 
 // Nueva ruta para actualizar todos los campos
-router.put("/update/:id", updateStockByID);
+router.put("/update/:id",[verifyToken,isModerator], updateStockByID);
 
 export default router;

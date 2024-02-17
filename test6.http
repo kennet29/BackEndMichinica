@@ -1,4 +1,4 @@
-post http://localhost:4000/api/configuracion/
+get https://api-mafy-store.onrender.com/api/colores
 Content-Type: application/json
 
 

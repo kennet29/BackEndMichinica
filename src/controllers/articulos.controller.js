@@ -13,15 +13,26 @@ export const getAllArticulos = async (req, res) => {
 
 export const createNewArticulo = async (req, res) => {
   const { nombre, descripcion, estado } = req.body;
-  const nuevoArticulo = new Articulo({ nombre, descripcion, estado });
 
+  // Verificar si el artículo ya existe
   try {
+    const articuloExistente = await Articulo.findOne({ nombre });
+
+    if (articuloExistente) {
+      // Si el artículo ya existe, enviar un mensaje de error
+      return res.status(400).json({ message: 'El artículo ya existe.' });
+    }
+
+    // Si el artículo no existe, crear uno nuevo
+    const nuevoArticulo = new Articulo({ nombre, descripcion, estado });
     const articuloCreado = await nuevoArticulo.save();
     res.status(201).json(articuloCreado);
   } catch (error) {
+    // Manejar errores durante la consulta o al intentar guardar el artículo
     res.status(500).json({ message: error.message });
   }
 };
+
 
 export const updateArticuloById = async (req, res) => {
   const { id } = req.params;

@@ -6,14 +6,15 @@ import {
   deleteIngresoByID,
   getIngresoById
 } from "../controllers/ingresos.controller.js";
+import { isAdmin,isModerator,verifyToken } from "../middlewares/authJwt.js";
 
 const router = Router();
 
 
 router.get("/", getAllIngresos);
-router.post("/", createNewIngresos);
-router.put("/:categoriaId", updateIngresoById);
-router.delete("/:categoriaId", deleteIngresoByID);
+router.post("/",[verifyToken,isModerator], createNewIngresos);
+router.put("/:categoriaId",[verifyToken,isModerator], updateIngresoById);
+router.delete("/:categoriaId",[verifyToken,isAdmin], deleteIngresoByID);
 router.get("/:id",getIngresoById);
 
 
