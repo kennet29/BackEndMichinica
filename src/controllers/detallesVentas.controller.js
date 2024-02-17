@@ -103,22 +103,10 @@ export const printDetallesVenta = async (req, res) => {
               <th style=" text-align: center; font-size: 14px;"> Cant.</th>
               <th style=" text-align: left; font-size: 14px;"> Subtotal</th>
             </tr>
-            ${detallesVenta.articulos.map(articulo => `
-              <tr>
-                <td style="border: text-align: left; font-size: 12px;">
-                  ${articulo.id_articulo.nombre}  
-                  ${articulo.id_color.color}  
-                  ${articulo.id_marca.marca}  
-                  ${articulo.id_talla.talla}
-                </td>
-                <td style="border: text-align: left; font-size: 12px;">${articulo.precio.toFixed(2)}</td>
-                <td style="border: text-align: right; font-size: 12px;">${articulo.cantidad}</td>
-                <td style="border: text-align: left; font-size: 12px;">${articulo.subtotal.toFixed(2)}</td>
-              </tr>
-            `).join('')}
-          </table>
     `;
+    
     const contentPart2 = `
+          </table>
           <p style="font-size: 12px;">Total: ${detallesVenta.id_ventas.total.toFixed(2)}</p>
           <p style="font-size: 12px;">Dirección: ${configuracion.direccion}</p>
           <p style="font-size: 12px;">E-Mail: ${configuracion.correo_electronico}</p>
@@ -130,6 +118,8 @@ export const printDetallesVenta = async (req, res) => {
     </html>
     `;
 
+    const content = contentPart1 + contentPart2;
+
     const pdfOptions = {
       format: 'Letter',
       border: {
@@ -140,7 +130,7 @@ export const printDetallesVenta = async (req, res) => {
       },
     };
 
-    pdf.create(contentPart1 + contentPart2, pdfOptions).toBuffer((err, buffer) => {
+    pdf.create(content, pdfOptions).toBuffer((err, buffer) => {
       if (err) {
         console.error(err);
         res.status(500).json({ message: 'Error generando el PDF' });
@@ -155,5 +145,6 @@ export const printDetallesVenta = async (req, res) => {
     res.status(500).json({ message: 'Error generando el PDF' });
   }
 };
+
 
 
