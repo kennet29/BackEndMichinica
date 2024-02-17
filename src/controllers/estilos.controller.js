@@ -13,14 +13,28 @@ export const getAllEstilos = async (req, res) => {
 
 // Crear un nuevo estilo
 export const createNewEstilo = async (req, res) => {
-  const estilo = new Estilo(req.body); // Crear una nueva instancia de Estilo utilizando los datos del cuerpo de la solicitud
+  const { estilo, descripcion, estado } = req.body;
+
+  // Verificar si el estilo ya existe
   try {
-    const newEstilo = await estilo.save(); // Guardar el nuevo estilo en la base de datos
-    res.status(201).json(newEstilo); // Devolver el nuevo estilo creado en formato JSON con el estado 201
+    const estiloExistente = await Estilo.findOne({ estilo });
+
+    if (estiloExistente) {
+      // Si el estilo ya existe, enviar un mensaje de error
+      return res.status(400).json({ message: 'El estilo ya existe.' });
+    }
+
+    // Si el estilo no existe, crear uno nuevo
+    const nuevoEstilo = new Estilo({ estilo, descripcion, estado });
+    const estiloGuardado = await nuevoEstilo.save();
+
+    res.status(201).json(estiloGuardado);
   } catch (error) {
-    res.status(400).json({ message: error.message }); // Si hay un error, devuelve un mensaje de error con el estado 400
+    // Manejar errores durante la consulta o al intentar guardar el estilo
+    res.status(500).json({ message: error.message });
   }
 };
+
 
 // Obtener un estilo por su ID
 export const getEstiloById = async (req, res) => {

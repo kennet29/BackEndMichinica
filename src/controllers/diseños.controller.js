@@ -1,15 +1,26 @@
 import Diseno from "../models/Diseños.js";
 
-// Create operation
 export const crearDiseno = async (req, res) => {
   const { diseno, descripcion, estado } = req.body;
+
+  // Verificar si el diseño ya existe
   try {
+    const disenoExistente = await Diseno.findOne({ diseno });
+
+    if (disenoExistente) {
+      // Si el diseño ya existe, enviar un mensaje de error
+      return res.status(400).json({ message: 'El diseño ya existe.' });
+    }
+
+    // Si el diseño no existe, crear uno nuevo
     const nuevoDiseno = await Diseno.create({ diseno, descripcion, estado });
     res.status(201).json(nuevoDiseno);
   } catch (error) {
+    // Manejar errores durante la consulta o al intentar guardar el diseño
     res.status(500).json({ message: error.message });
   }
 };
+
 
 export const obtenerDisenos = async (req, res) => {
   try {

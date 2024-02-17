@@ -22,15 +22,25 @@ export const DeleteMarcas = async (req, res) => {
 
 export const CreateMarca = async (req, res) => {
   const { marca, descripcion, estado } = req.body;
-  try{
+
+  // Verificar si la marca ya existe
+  try {
+    const marcaExistente = await Marca.findOne({ marca });
+
+    if (marcaExistente) {
+      // Si la marca ya existe, enviar un mensaje de error
+      return res.status(400).json({ message: 'La marca ya existe.' });
+    }
+
+    // Si la marca no existe, crear una nueva
     const newMarca = await Marca.create({ marca, descripcion, estado });
     res.status(201).json(newMarca);
-  }
-  catch (error) {
+  } catch (error) {
+    // Manejar errores durante la consulta o al intentar guardar la marca
     res.status(500).json({ message: error.message });
   }
-
 };
+
 
 export const UpdateMarca = async (req, res) => {
   const { id } = req.params;

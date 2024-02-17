@@ -21,20 +21,27 @@ export const getAllProveedores = async (req, res) => {
 
 export const createNewProveedor = async (req, res) => {
   const { nombre, direccion, telefono, correo, descripcion, estado } = req.body;
+
+  // Verificar si el proveedor ya existe por nombre o correo
   try {
-    const newProveedor = await Proveedor.create({ 
-      nombre, 
-      direccion, 
-      telefono, 
-      correo, 
-      descripcion, 
-      estado
+    const proveedorExistente = await Proveedor.findOne({
+      $or: [{ nombre }, { correo }]
     });
+
+    if (proveedorExistente) {
+      // Si el proveedor ya existe, enviar un mensaje de error
+      return res.status(400).json({ message: 'El proveedor ya existe.' });
+    }
+
+    // Si el proveedor no existe, crear uno nuevo
+    const newProveedor = await Proveedor.create({ nombre, direccion, telefono, correo, descripcion, estado });
     res.status(201).json(newProveedor);
   } catch (error) {
+    // Manejar errores durante la consulta o al intentar guardar el proveedor
     res.status(500).json({ message: error.message });
   }
 };
+
 
 export const getProveedorById = async (req, res) => {
   const { id } = req.params;

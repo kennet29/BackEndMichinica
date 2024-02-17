@@ -19,13 +19,25 @@ export const getAllMateriales = async (req, res) => {
 };
 
 export const createNewMaterial = async (req, res) => {
-  const material = req.body;
-  const newMaterial = new Material(material);
+  const { material, descripcion, estado } = req.body;
+
+  // Verificar si el material ya existe
   try {
+    const materialExistente = await Material.findOne({ material });
+
+    if (materialExistente) {
+      // Si el material ya existe, enviar un mensaje de error
+      return res.status(400).json({ message: 'El material ya existe.' });
+    }
+
+    // Si el material no existe, crear uno nuevo
+    const newMaterial = new Material({ material, descripcion, estado });
     await newMaterial.save();
+
     res.status(201).json(newMaterial);
   } catch (error) {
-    res.status(409).json({ message: error.message });
+    // Manejar errores durante la consulta o al intentar guardar el material
+    res.status(500).json({ message: error.message });
   }
 };
 

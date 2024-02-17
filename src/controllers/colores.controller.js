@@ -2,13 +2,27 @@ import Color from "../models/Colores.js";
 
 
 export const crearColor = async (req, res) => {
+  const { color, codigo, estado } = req.body;
+
+  // Verificar si el color ya existe
   try {
-    const nuevoColor = await Color.create(req.body);
+    const colorExistente = await Color.findOne({ color });
+
+    if (colorExistente) {
+      // Si el color ya existe, enviar un mensaje de error
+      return res.status(400).json({ error: 'El color ya existe.' });
+    }
+
+    // Si el color no existe, crear uno nuevo
+    const nuevoColor = await Color.create({ color, codigo, estado });
     res.status(201).json(nuevoColor);
   } catch (error) {
-    res.status(500).json({ error: "No se pudo crear el color" });
+    // Manejar errores durante la consulta o al intentar guardar el color
+    console.error(error);
+    res.status(500).json({ error: 'No se pudo crear el color' });
   }
 };
+
 
 // Controlador para mostrar todos los colores
 export const mostrarColores = async (req, res) => {
