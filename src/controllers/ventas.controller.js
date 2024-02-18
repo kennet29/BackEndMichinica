@@ -59,3 +59,37 @@ export const getVentaById = async (req, res) => {
       res.status(500).json({ message: "Error fetching sale by ID", error: error.message });
     }
   };
+
+
+  export const sumarTotalVentasPorAnio = async (anio) => {
+    try {
+      const primerDiaAnio = new Date(`${anio}-01-01`);
+      const ultimoDiaAnio = new Date(`${anio + 1}-01-01`);
+  
+      const resultado = await Ventas.aggregate([
+        {
+          $match: {
+            fecha: {
+              $gte: primerDiaAnio,
+              $lt: ultimoDiaAnio,
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalVentasAnio: { $sum: '$total' },
+          },
+        },
+      ]);
+  
+      if (resultado.length > 0) {
+        return resultado[0].totalVentasAnio;
+      } else {
+        return 0;  // Si no hay ventas en el año especificado, devolver cero o el valor que consideres apropiado
+      }
+    } catch (error) {
+      console.error(`Error al sumar los totales de ventas del año ${anio}:`, error);
+      throw error;
+    }
+  };

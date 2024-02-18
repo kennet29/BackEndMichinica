@@ -1,5 +1,5 @@
 import DetallesVenta from "../models/DetallesVenta.js";
-import puppeteer from 'puppeteer';
+
 
 import Configuracion from "../models/Configuracion.js";
 
@@ -12,6 +12,45 @@ export const getAllDetVentas = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+export const obtenerTotalPorCategoriaEnAnio = async (anio) => {
+  try {
+    const ventasPorCategoria = await DetallesVenta.aggregate([
+      {
+        $match: {
+          'createdAt': {
+            $gte: new Date(anio, 0, 1), // Inicio del año
+            $lt: new Date(anio + 1, 0, 1), // Fin del año
+          },
+        },
+      },
+      {
+        $unwind: '$articulos',
+      },
+      {
+        $group: {
+          _id: '$articulos.id_categoria',
+          totalVendido: { $sum: '$articulos.subtotal' },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          totalVendido: 1,
+        },
+      },
+    ]);
+
+    return ventasPorCategoria;
+  } catch (error) {
+    console.error('Error al obtener el total por categoría:', error);
+    throw error;
+  }
+};
+
+
+
 
 export const updateDetVentasById = async (req, res) => {
   const { id } = req.params;
