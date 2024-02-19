@@ -82,7 +82,8 @@ export const createNewDetVentas = async (req, res) => {
   }
 };
 
-import pdf from 'html-pdf';
+import PDFDocument from 'pdfkit';
+import fs from 'fs';
 
 export const printDetallesVenta = async (req, res) => {
   const { id } = req.params;
@@ -125,65 +126,44 @@ export const printDetallesVenta = async (req, res) => {
       return res.status(404).json({ message: 'Configuración no encontrada' });
     }
 
-    const contentPart1 = `
-    <html>
-      <head>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-      </head>
-      <body>
-        <div style="font-size: 10px; border: 1px solid black; width:280px; text-align:center"> 
-          <p style="font-size:23px; text-align:center">Mafy Store</p>
-          <p style="font-size: 14px;">ID-Factura </br> ${detallesVenta._id}</p>
-          <p style="font-size: 12px;">Fecha: ${new Date(detallesVenta.id_ventas.createdAt).toLocaleString('es-ES') } </br>  Cliente: ${detallesVenta.id_ventas.cliente} </p>
-          <table style="width:95%; border-collapse: collapse; margin:0 auto">
-            <tr>
-              <th style=" text-align: left; font-size: 14px;">Artículos</th>
-              <th style=" text-align: left; font-size: 14px;"> Precio</th>
-              <th style=" text-align: center; font-size: 14px;"> Cant.</th>
-              <th style=" text-align: left; font-size: 14px;"> Subtotal</th>
-            </tr>
-    `;
-    
-    const contentPart2 = `
-          </table>
-          <p style="font-size: 12px;">Total: ${detallesVenta.id_ventas.total.toFixed(2)}</p>
-          <p style="font-size: 12px;">Dirección: ${configuracion.direccion}</p>
-          <p style="font-size: 12px;">E-Mail: ${configuracion.correo_electronico}</p>
-          <p style="font-size: 12px;">Teléfono 1: ${configuracion.telefono_1}  Teléfono 2: ${configuracion.telefono_2}</p>
-          <p style="font-size:12px; text-align:center">Precios incluyen IVA</p>
-          <p style="font-size:23px; text-align:center">¡Gracias por su Compra!</p>
-        </div>
-      </body>
-    </html>
-    `;
+    const pdfDoc = new PDFDocument();
+    const stream = fs.createWriteStream(`detallesVenta_${id}.pdf`);
 
-    const content = contentPart1 + contentPart2;
+    pdfDoc.pipe(stream);
 
-    const pdfOptions = {
-      format: 'Letter',
-      border: {
-        top: '10mm',
-        right: '10mm',
-        bottom: '10mm',
-        left: '10mm',
-      },
-    };
+    // Add content to PDF
+    pdfDoc.fontSize(23).text('Mafy Store', { align: 'center' });
+    pdfDoc.fontSize(14).text(`ID-Factura\n${detallesVenta._id}`);
+    pdfDoc.fontSize(12).text(`Fecha: ${new Date(detallesVenta.id_ventas.createdAt).toLocaleString('es-ES') }\nCliente: ${detallesVenta.id_ventas.cliente}`);
 
-    pdf.create(content, pdfOptions).toBuffer((err, buffer) => {
-      if (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Error generando el PDF' });
-      } else {
-        res.setHeader('Content-Disposition', `attachment; filename=detallesVenta_${id}.pdf`);
-        res.setHeader('Content-Type', 'application/pdf');
-        res.status(200).send(buffer);
-      }
+    // Add table with details
+    pdfDoc.table({
+      body: [
+        ['Artículos', 'Precio', 'Cant.', 'Subtotal'],
+        // Add your table data here based on detallesVenta
+      ],
+      width: [null, null, null, null],
+    });
+
+    pdfDoc.fontSize(12).text(`Total: ${detallesVenta.id_ventas.total.toFixed(2)}`);
+    pdfDoc.fontSize(12).text(`Dirección: ${configuracion.direccion}`);
+    pdfDoc.fontSize(12).text(`E-Mail: ${configuracion.correo_electronico}`);
+    pdfDoc.fontSize(12).text(`Teléfono 1: ${configuracion.telefono_1}  Teléfono 2: ${configuracion.telefono_2}`);
+    pdfDoc.fontSize(12).text('Precios incluyen IVA', { align: 'center' });
+    pdfDoc.fontSize(23).text('¡Gracias por su Compra!', { align: 'center' });
+
+    // Finalize PDF
+    pdfDoc.end();
+
+    stream.on('finish', () => {
+      res.setHeader('Content-Disposition', `attachment; filename=detallesVenta_${id}.pdf`);
+      res.setHeader('Content-Type', 'application/pdf');
+      fs.createReadStream(`detallesVenta_${id}.pdf`).pipe(res);
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error generando el PDF' });
   }
 };
-
 
 
