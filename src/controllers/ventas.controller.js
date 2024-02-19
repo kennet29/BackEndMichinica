@@ -10,6 +10,57 @@ export const getAllVentas = async (req, res) => {
   }
 };
 
+export const obtenerVentasTotalesPorMes = async (req, res) => {
+  try {
+    const ventasPorMes = await Ventas.aggregate([
+      {
+        $match: {
+          fecha: {
+            $gte: new Date(`${new Date().getFullYear()}-01-01`),
+            $lt: new Date(`${new Date().getFullYear() + 1}-01-01`),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: '$fecha' },
+          ventasTotales: { $sum: '$total' },
+        },
+      },
+    ]);
+
+    const nombresMeses = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    const totalesPorMes = {};
+    
+    nombresMeses.forEach((mes, index) => {
+      totalesPorMes[mes] = 0;
+    });
+
+    // Actualizar los totales con las ventas reales
+    ventasPorMes.forEach((venta) => {
+      const nombreMes = nombresMeses[venta._id - 1];
+      totalesPorMes[nombreMes] = venta.ventasTotales;
+    });
+
+    // Formatear los resultados
+    const resultadosFormateados = nombresMeses.map((nombreMes) => ({
+      mes: nombreMes,
+      ventasTotales: totalesPorMes[nombreMes],
+    }));
+
+    res.json(resultadosFormateados);
+  } catch (error) {
+    console.error('Error al obtener las ventas por mes:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+
+
+
 // Create a new sale
 export const createNewVenta = async (req, res) => {
   const ventaData = req.body;
