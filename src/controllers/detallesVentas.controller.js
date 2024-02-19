@@ -85,7 +85,7 @@ export const createNewDetVentas = async (req, res) => {
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 
-import PDFDocument from 'pdfkit';
+
 
 export const printDetallesVenta = async (req, res) => {
   const { id } = req.params;
