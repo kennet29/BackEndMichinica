@@ -1,9 +1,4 @@
-POST http://localhost:4000/api/articulos/
+get http://localhost:4000/api/detalleventa/65d052d1dffcd84c5e353413/print
 Content-Type: application/json
-x-access-token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YzgzZDI2ZWQ4ZThiYmFlNTI3ZjYwMyIsImlhdCI6MTcwODE4Nzg4MiwiZXhwIjoxNzA4Mjc0MjgyfQ.c0bLM58ZWe9rgnwjXUMWhe2uceOuDytitsNcZZdLBbcso'
+x-access-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YzgzZDI2ZWQ4ZThiYmFlNTI3ZjYwMyIsImlhdCI6MTcwODM1NjM3MywiZXhwIjoxNzA4NDQyNzczfQ.xFhXjKczc_O7AaGO7Q3_cYIBpAQ50H9qJJnxRGSmu1U
 
-{
-  "nombre": "Articulo",
-  "descripcion": "descripcion",
-  "estado": true
-}
