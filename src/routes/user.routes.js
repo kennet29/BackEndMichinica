@@ -11,6 +11,6 @@ router.post("/",[verifyToken,isAdmin,checkExistingUser], createUser);
 router.put("/:userId",[verifyToken,isAdmin], updateUser);
 router.get("/info",[verifyToken],getUsers);
 router.get("/all",getUserNames);
-router.get("/:id",[verifyToken,isAdmin],getRoleNameById);
+router.get("/:id",[verifyToken],getRoleNameById);
 
 export default router;

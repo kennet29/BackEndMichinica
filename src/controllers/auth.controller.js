@@ -34,7 +34,7 @@ export const signupHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).json(error.message);
   }
-};
+};  
 
 export const signinHandler = async (req, res) => {
   try {
