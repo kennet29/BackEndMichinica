@@ -9,23 +9,7 @@ export const getAllPromociones = async (req, res) => {
   }
 };
 
-export const createNewPromocion = async (req, res) => {
-  const { promocion, fecha_inicio, fecha_final, descuento, descripcion, estado, cantidad_Articulos } = req.body;
-  try {
-    const newPromocion = await Promocion.create({ 
-      promocion, 
-      fecha_inicio, 
-      fecha_final, 
-      descuento, 
-      descripcion, 
-      estado, 
-      cantidad_Articulos 
-    });
-    res.status(201).json(newPromocion);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+
 
 export const deletePromocionById = async (req, res) => {
   const { id } = req.params;
@@ -40,10 +24,26 @@ export const deletePromocionById = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+export const createNewPromocion = async (req, res) => {
+  const { promocion, fecha_inicio, fecha_final, descuento, descripcion, estado } = req.body;
+  try {
+    const newPromocion = await Promocion.create({ 
+      promocion, 
+      fecha_inicio, 
+      fecha_final, 
+      descuento, 
+      descripcion, 
+      estado 
+    });
+    res.status(201).json(newPromocion);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};  
 
 export const updatePromocionById = async (req, res) => {
   const { id } = req.params;
-  const { promocion, fecha_inicio, fecha_final, descuento, descripcion, estado, cantidad_Articulos } = req.body;
+  const { promocion, fecha_inicio, fecha_final, descuento, descripcion, estado } = req.body;
   try {
     const updatedPromocion = await Promocion.findByIdAndUpdate(
       id,
@@ -53,8 +53,7 @@ export const updatePromocionById = async (req, res) => {
         fecha_final, 
         descuento, 
         descripcion, 
-        estado, 
-        cantidad_Articulos 
+        estado 
       },
       { new: true }
     );

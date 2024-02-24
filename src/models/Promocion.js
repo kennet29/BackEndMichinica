@@ -28,10 +28,6 @@ const promocionSchema = new mongoose.Schema(
       type: Boolean,
       required: true,
     },
-    cantidad_Articulos: {
-      type: Number,
-      required: true,
-    },
   },
   {
     timestamps: false,

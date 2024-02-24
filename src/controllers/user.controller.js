@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import Role from "../models/Role.js";
+import mongoose from 'mongoose';
 
 export const createUser = async (req, res) => {
   try {
@@ -41,11 +42,22 @@ export const getUser = async (req, res) => {
   const user = await User.findById(req.params.userId);
   return res.json(user);
 };
+
 export const getUserNames = async (req, res) => {
   try {
-    const users = await User.find({}, '_id username'); // Retrieve only _id and username fields
+    const users = await User.find({}, '_id username roles') // Include 'roles' field in the query
+                               .populate('roles', '_id name'); // Populate the 'roles' field and select '_id' and 'name'
 
-    return res.status(200).json(users.map(user => ({ _id: user._id, username: user.username })));
+    const formattedUsers = users.map(user => ({
+      _id: user._id,
+      username: user.username,
+      roles: user.roles.map(role => ({
+        _id: role._id,
+        name: role.name
+      }))
+    }));
+
+    return res.status(200).json(formattedUsers);
   } catch (error) {
     console.error('Error al obtener los nombres de usuario:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
@@ -121,6 +133,36 @@ export const  getRoleNameById = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al editar el usuario:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+export const getUserRolesById = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Verificar si el ID del usuario es válido
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'ID de usuario no válido' });
+    }
+
+    // Buscar el usuario por su ID y seleccionar el campo 'roles'
+    const user = await User.findById(userId, 'roles').populate('roles', 'name');
+
+    // Verificar si el usuario existe
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    // Obtener los roles del usuario en un formato adecuado
+    const userRoles = user.roles.map(role => ({
+      _id: role._id,
+      name: role.name,
+    }));
+
+    return res.status(200).json({ roles: userRoles });
+  } catch (error) {
+    console.error('Error al obtener los roles del usuario por ID:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
