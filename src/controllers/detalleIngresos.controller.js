@@ -63,8 +63,6 @@ export const deleteDetIngresoByID = async (req, res) => {
   }
 };
 
-
-
 export const printDetalleIngresos = async (req, res) => {
   const { id } = req.params;
 
@@ -111,93 +109,92 @@ export const printDetalleIngresos = async (req, res) => {
         select: 'estilo',
       })
       .populate({
-        path:'proveedor',
-        model:'Proveedor',
-        select:'proveedores'
-      })
-      .populate({
-        path: 'articulos.id_diseño',
-        model: 'Diseno',
-        select: 'diseno',
+        path: 'articulos.id_color',
+        model: 'Color',
+        select: 'color',
       });
 
-    if (!detalleIngresos) {
-      return res.status(404).json({ message: 'Detalle de ingresos no encontrado' });
-    }
-
-    const configuracion = await Configuracion.findOne();
-
-    if (!configuracion) {
-      return res.status(404).json({ message: 'Configuración no encontrada' });
-    }
-
-    const pdfDoc = new PDFDocument();
-    const filePath = path.resolve(`detalleIngresos_${id}.pdf`);
-    const writeStream = fs.createWriteStream(filePath);
-
-    pdfDoc.pipe(writeStream);
-
-    pdfDoc.fontSize(30).text('Mafy Store', { align: 'center', x: 145 });
-
-    pdfDoc.moveDown();
-
-    const formattedDate = new Date(detalleIngresos.createdAt).toLocaleString('es-ES');
-    const textToCenter = `ID-Ingreso: ${detalleIngresos._id} Fecha: ${formattedDate}`;
-
-    pdfDoc.fontSize(10).text(textToCenter, 165);
-
-    pdfDoc.moveDown();
-
-    const totalWidth = 400;
-    const centerX = (pdfDoc.page.width - totalWidth) / 2;
-
-    const tableHeight = 200 + detalleIngresos.articulos.length * 20;
-
-    pdfDoc.rect(centerX - 10, 200, totalWidth, tableHeight + 30).stroke();  // Ajusta la altura del marco de la tabla
-
-    pdfDoc
-      .fontSize(10)
-      .text('Artículos', centerX, 210)
-      .text('Categoría', centerX + 50, 210)
-      .text('Marca', centerX + 105, 210)
-      .text('Talla', centerX + 150, 210)
-      .text('Precio', centerX + 190, 210)
-      .text('IVA', centerX + 240, 210)
-      .text('Cant.', centerX + 290, 210)
-      .text('Subtotal', centerX + 340, 210);
-
-    detalleIngresos.articulos.forEach((articulo, index) => {
-      const yPosition = 230 + index * 20;  // Ajusta la posición vertical dinámicamente
-      pdfDoc.rect(centerX - 10, yPosition - 5, totalWidth, 20).stroke();  // Ajusta la altura del borde interno de la tabla
-
+     
+    
+      if (!detalleIngresos) {
+        return res.status(404).json({ message: 'Detalle de ingresos no encontrado' });
+      }
+  
+      const configuracion = await Configuracion.findOne();
+  
+      if (!configuracion) {
+        return res.status(404).json({ message: 'Configuración no encontrada' });
+      }
+  
+      const pdfDoc = new PDFDocument();
+      const filePath = path.resolve(`detalleIngresos_${id}.pdf`);
+      const writeStream = fs.createWriteStream(filePath);
+  
+      pdfDoc.pipe(writeStream);
+  
+      // Encabezado with Configuracion data
+      pdfDoc.fontSize(18).text(configuracion.nombre_negocio, { align: 'center' });
+      pdfDoc.fontSize(10).text(`${configuracion.direccion} | Teléfono: ${configuracion.telefono_1}/ ${configuracion.telefono_2} `, { align: 'center' });
+  
+      pdfDoc.moveDown();
+  
+      // Detalles del recibo
+      const formattedDate = new Date(detalleIngresos.createdAt).toLocaleString('es-ES');
+      pdfDoc.fontSize(10).text(`ID-Ingreso: ${detalleIngresos._id}`, { align: 'center' });
+      pdfDoc.fontSize(10).text(`Fecha: ${formattedDate}`, { align: 'center' });
+  
+      pdfDoc.moveDown();
+  
+      // Tabla de artículos
+      const totalWidth = 500;
+      const totalHeight = 230; // Altura del borde de la tabla
+      const centerX = ((pdfDoc.page.width - totalWidth) / 2 + 5);
+      const headerY = pdfDoc.y + 10;
+  
+      // Añadir borde exterior a la tabla con altura ajustada a 500
+      pdfDoc.rect(centerX, headerY - 5, totalWidth, totalHeight).stroke();
+  
       pdfDoc
         .fontSize(10)
-        .text(articulo.id_articulo.nombre, centerX, yPosition)
-        .text(articulo.id_categoria.categoria, centerX + 50, yPosition)
-        .text(articulo.id_marca.marca, centerX + 105, yPosition)
-        .text(articulo.id_talla.talla, centerX + 150, yPosition)
-        .text(articulo.precio_proveedor.toFixed(2), centerX + 190, yPosition)
-        .text(articulo.iva.toFixed(2), centerX + 240, yPosition)
-        .text(articulo.cantidad, centerX + 290, yPosition)
-        .text(articulo.subtotal.toFixed(2), centerX + 340, yPosition);
-    });
-
-    const totalYPosition = 620 + detalleIngresos.articulos.length * 20;
-    pdfDoc
-      .fontSize(10)
-      .text('Total:', centerX + 225, totalYPosition + 20)  // Ajusta el x y y-position
-      .text(detalleIngresos.total.toFixed(2), centerX + 270, totalYPosition + 20);  // Ajusta el x y y-position
-
-    pdfDoc.end();
-
-    writeStream.on('finish', () => {
-      res.setHeader('Content-Disposition', `attachment; filename=detalleIngresos_${id}.pdf`);
-      res.setHeader('Content-Type', 'application/pdf');
-      res.status(200).sendFile(filePath);
-    });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error generando el PDF' });
-  }
-};
+        .text('Artículo', centerX + 10, headerY)
+        .text('Categoría', centerX + 60, headerY)
+        .text('Marca', centerX + 120, headerY)
+        .text('Talla', centerX + 170, headerY)
+        .text('Color', centerX + 210, headerY)
+        .text('Precio', centerX + 250, headerY)
+        .text('Cantidad', centerX + 300, headerY)
+        .text('Subtotal', centerX + 360, headerY)
+        .text('IVA', centerX + 440, headerY);
+  
+      detalleIngresos.articulos.forEach((articulo, index) => {
+        const yPosition = pdfDoc.y + 5 + index * 20;
+  
+        pdfDoc
+          .fontSize(10)
+          .text(articulo.id_articulo.nombre, centerX + 10, yPosition + 10)
+          .text(articulo.id_categoria.categoria, centerX + 60, yPosition + 10)
+          .text(articulo.id_marca.marca, centerX + 120, yPosition + 10)
+          .text(articulo.id_talla.talla, centerX + 170, yPosition + 10)
+          .text(articulo.id_color.color, centerX + 210, yPosition + 10)
+          .text(articulo.precio_proveedor.toFixed(2), centerX + 250, yPosition + 10)
+          .text(articulo.cantidad.toString(), centerX + 300, yPosition + 10)
+          .text(articulo.subtotal.toFixed(2), centerX + 360, yPosition + 10)
+          .text(articulo.iva.toFixed(2), centerX + 440, yPosition + 10);
+      });
+  
+      pdfDoc.moveDown();
+      pdfDoc.fontSize(10).text(`Total C$: ${detalleIngresos.total.toFixed(2)}`, 75, 400);
+  
+      pdfDoc.end();
+  
+      writeStream.on('finish', () => {
+        res.setHeader('Content-Disposition', `attachment; filename=detalleIngresos_${id}.pdf`);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.status(200).sendFile(filePath);
+      });
+  
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error generando el PDF' });
+    }
+  };

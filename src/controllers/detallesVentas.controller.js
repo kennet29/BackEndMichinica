@@ -83,6 +83,7 @@ export const createNewDetVentas = async (req, res) => {
 };
 
 import PDFDocument from 'pdfkit';
+import { format } from 'date-fns';
 
 export const printDetallesVenta = async (req, res) => {
   const { id } = req.params;
@@ -121,9 +122,10 @@ export const printDetallesVenta = async (req, res) => {
       });
 
     if (!detallesVenta) {
+      
       return res.status(404).json({ message: 'Detalles de ventas no encontrados' });
     }
-
+    const fechaCreacion = format(new Date(detallesVenta.id_ventas.createdAt), 'dd/MM/yyyy');
     const configuracion = await Configuracion.findOne();
 
     if (!configuracion) {
@@ -153,23 +155,20 @@ export const printDetallesVenta = async (req, res) => {
       .text('Direccion: ' + configuracion.direccion, centerXPositionTextBlock, currentYPosition)
       .text(`${'Telefono : ' + configuracion.telefono_1} / ${configuracion.telefono_2}`, centerXPositionTextBlock, currentYPosition + 10);
 
-    currentYPosition += 30;
+    currentYPosition += 20;
 
-    pdfDoc
-      .font('Helvetica')
-      .fontSize(8)
-      .text(`ID-Ventas: ${detallesVenta.id_ventas._id}`, centerXPositionTextBlock, currentYPosition);
 
-    currentYPosition += 25;
 
-    pdfDoc
-    .font('Helvetica-Bold')
-    .fontSize(8)
-    .text(`Cliente: ${detallesVenta.id_ventas.cliente}`, centerXPositionTextBlock, currentYPosition);
-  
-  currentYPosition += 45;
+  pdfDoc
+  .font('Helvetica')
+  .fontSize(8)
+  .text(`ID-Ventas: ${detallesVenta.id_ventas._id}`, centerXPositionTextBlock, currentYPosition)
+  .text(`Cliente: ${detallesVenta.id_ventas.cliente}`, centerXPositionTextBlock, currentYPosition + 15)
+  .text(`Fecha de Creación: ${fechaCreacion}`, centerXPositionTextBlock, currentYPosition + 30);
 
-    let yPosition = 150;
+currentYPosition += 20;
+
+    let yPosition = 140;
 
     pdfDoc
       .font('Helvetica-Bold')
@@ -207,7 +206,7 @@ pdfDoc
   .fontSize(12)
   .text('¡Gracias por su compra!', centerXPositionThanks, yPosition + 50);
 
-    res.setHeader('Content-Disposition', `attachment; filename=recibo_supermercado_${id}.pdf`);
+    res.setHeader('Content-Disposition', `attachment; filename=recibo_${id}.pdf`);
     res.setHeader('Content-Type', 'application/pdf');
     pdfDoc.pipe(res);
     pdfDoc.end();
