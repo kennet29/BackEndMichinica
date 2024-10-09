@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const servicioSchema = new mongoose.Schema({
   nombre: { type: String, required: true },
@@ -8,4 +8,5 @@ const servicioSchema = new mongoose.Schema({
 });
 
 const Servicio = mongoose.model('Servicio', servicioSchema);
-module.exports = Servicio;
+
+export default Servicio;

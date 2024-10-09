@@ -1,7 +1,6 @@
-const Factura = require('../models/Factura');
+import Factura from '../models/FacturaServicio.js';
 
-
-exports.crearFactura = async (req, res) => {
+export const crearFactura = async (req, res) => {
   try {
     const nuevaFactura = new Factura(req.body);
     const facturaGuardada = await nuevaFactura.save();
@@ -11,8 +10,7 @@ exports.crearFactura = async (req, res) => {
   }
 };
 
-
-exports.obtenerFacturas = async (req, res) => {
+export const obtenerFacturas = async (req, res) => {
   try {
     const facturas = await Factura.find().populate('servicios.servicio');
     res.json(facturas);
@@ -21,8 +19,7 @@ exports.obtenerFacturas = async (req, res) => {
   }
 };
 
-
-exports.obtenerFacturaPorId = async (req, res) => {
+export const obtenerFacturaPorId = async (req, res) => {
   try {
     const factura = await Factura.findById(req.params.id).populate('servicios.servicio');
     if (!factura) return res.status(404).json({ message: 'Factura no encontrada' });
@@ -32,8 +29,7 @@ exports.obtenerFacturaPorId = async (req, res) => {
   }
 };
 
-
-exports.eliminarFactura = async (req, res) => {
+export const eliminarFactura = async (req, res) => {
   try {
     await Factura.findByIdAndDelete(req.params.id);
     res.json({ message: 'Factura eliminada' });

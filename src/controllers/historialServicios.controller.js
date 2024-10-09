@@ -1,7 +1,6 @@
-const Historial = require('../models/HistorialServicios');
+import Historial from '../models/Historial.js';
 
-
-exports.crearHistorial = async (req, res) => {
+export const crearHistorial = async (req, res) => {
   try {
     const nuevoHistorial = new Historial(req.body);
     const historialGuardado = await nuevoHistorial.save();
@@ -11,8 +10,7 @@ exports.crearHistorial = async (req, res) => {
   }
 };
 
-
-exports.obtenerHistorial = async (req, res) => {
+export const obtenerHistorial = async (req, res) => {
   try {
     const historial = await Historial.find().populate('factura');
     res.json(historial);
@@ -21,8 +19,7 @@ exports.obtenerHistorial = async (req, res) => {
   }
 };
 
-
-exports.obtenerHistorialPorId = async (req, res) => {
+export const obtenerHistorialPorId = async (req, res) => {
   try {
     const historial = await Historial.findById(req.params.id).populate('factura');
     if (!historial) return res.status(404).json({ message: 'Historial no encontrado' });
@@ -32,8 +29,7 @@ exports.obtenerHistorialPorId = async (req, res) => {
   }
 };
 
-
-exports.eliminarHistorial = async (req, res) => {
+export const eliminarHistorial = async (req, res) => {
   try {
     await Historial.findByIdAndDelete(req.params.id);
     res.json({ message: 'Historial eliminado' });
