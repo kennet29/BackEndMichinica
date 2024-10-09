@@ -26,6 +26,10 @@ import ingresosroutes from "./routes/ingresos.routes.js";
 import DetallesVentaroutes from "./routes/detallesventa.routes.js";
 import DetalleIngresos from "./routes/detalle.ingresos.routes.js";
 import Ventasroutes from "./routes/ventas.routes.js";
+import Servicio from "./routes/servicio.routes.js";
+import FacturaServicio  from "./routes/facturaServicio.routes.js";
+import HistorialServicio  from "./routes/historialServicio.route.js";
+
 
 
 
@@ -86,6 +90,9 @@ app.use("/api/ingresos",ingresosroutes);
 app.use("/api/detalleventa",DetallesVentaroutes);
 app.use("/api/detalleingreso",DetalleIngresos);
 app.use("/api/ventas",Ventasroutes);
+app.use("/api/servicios",Servicio);
+app.use("")
+
 
 
 
