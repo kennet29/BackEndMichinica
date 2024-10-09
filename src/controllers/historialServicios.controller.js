@@ -1,4 +1,4 @@
-import Historial from '../models/Historial.js';
+import Historial from '../models/HistorialServicios.js';
 
 export const crearHistorial = async (req, res) => {
   try {

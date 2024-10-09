@@ -1,17 +1,30 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const facturaSchema = new mongoose.Schema({
-  cliente: {
-    nombre: { type: String, required: true },
+const historialSchema = new mongoose.Schema({
+  factura: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Factura', 
+    required: true 
   },
-  servicios: [{
-    servicio: { type: mongoose.Schema.Types.ObjectId, ref: 'Servicio', required: true },
-    cantidad: { type: Number, required: true },
-    total: { type: Number, required: true },
-  }],
-  fecha: { type: Date, default: Date.now },
-  totalFactura: { type: Number, required: true },
+  fecha: { 
+    type: Date, 
+    default: Date.now 
+  },
+  accion: { 
+    type: String, 
+    enum: ['CREACION', 'ACTUALIZACION', 'ELIMINACION'], 
+    required: true 
+  },
+  usuario: { 
+    type: String, 
+    required: true 
+  },
+  detalles: {
+    type: String,
+    required: false
+  }
 });
 
-const Factura = mongoose.model('Factura', facturaSchema);
-module.exports = Factura;
+const Historial = mongoose.model('Historial', historialSchema);
+
+export default Historial;

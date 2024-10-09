@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const facturaSchema = new mongoose.Schema({
   cliente: {
@@ -14,4 +14,5 @@ const facturaSchema = new mongoose.Schema({
 });
 
 const Factura = mongoose.model('Factura', facturaSchema);
-module.exports = Factura;
+
+export default Factura;

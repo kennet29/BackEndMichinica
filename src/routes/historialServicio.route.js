@@ -4,7 +4,7 @@ import {
   obtenerHistorial, 
   obtenerHistorialPorId, 
   eliminarHistorial 
-} from '../controllers/historial.controller.js';
+} from '../controllers/historialServicios.controller.js';
 
 const router = Router();
 
