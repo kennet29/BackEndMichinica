@@ -1,4 +1,5 @@
-put https://api-mafy-store.onrender.com/api/user/65c83d26ed8e8bbae527f603
+POST  http://localhost:4000/api/auth/?email=ken@gmail.com&password=1234
+
 Content-Type: application/json
 
 {
