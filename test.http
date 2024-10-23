@@ -1,4 +1,5 @@
 
+GET https://apimafy.zeabur.app/api/Ingresos/reportes?startDate=2024-01-01&endDate=2024-10-23
 
 
 GET http://localhost:4000/api/FacturaServicio/reporte?startDate=2024-01-01&endDate=2024-10-22

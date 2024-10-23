@@ -77,23 +77,26 @@ export const updateIngresoById = async (req, res) => {
 
 
 import excel from 'exceljs';
-
 export const exportIngresosToExcel = async (req, res) => {
   const { startDate, endDate } = req.query;
 
+  console.log("Fechas recibidas:", { startDate, endDate }); // Agregado para depuración
+
   try {
- 
     const start = new Date(startDate);
     const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999); 
+    end.setHours(23, 59, 59, 999);
+
+    console.log("Fechas convertidas a Date:", { start, end }); // Agregado para depuración
 
     const ingresos = await Ingresos.find({
       fecha: { $gte: start, $lte: end },
-    }).populate('id_proveedor'); 
+    }).populate('id_proveedor');
+
+    console.log("Ingresos encontrados:", ingresos); // Agregado para depuración
 
     const workbook = new excel.Workbook();
     const worksheet = workbook.addWorksheet('Ingresos');
-
 
     worksheet.columns = [
       { header: 'Nombre Proveedor', key: 'nombre_proveedor', width: 30 },
@@ -104,11 +107,10 @@ export const exportIngresosToExcel = async (req, res) => {
       { header: 'Total', key: 'total', width: 10 },
     ];
 
-
     ingresos.forEach((ingreso) => {
       const nombreProveedor = ingreso.id_proveedor ? ingreso.id_proveedor.nombre : 'Proveedor no encontrado';
       worksheet.addRow({
-        nombre_proveedor: nombreProveedor, 
+        nombre_proveedor: nombreProveedor,
         fecha: ingreso.fecha,
         iva: ingreso.iva,
         descuento: ingreso.descuento,
@@ -116,9 +118,10 @@ export const exportIngresosToExcel = async (req, res) => {
         total: ingreso.total,
       });
     });
+
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', 'attachment; filename=ingresos.xlsx');
-  
+
     await workbook.xlsx.write(res);
     res.end();
   } catch (error) {
