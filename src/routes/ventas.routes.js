@@ -6,21 +6,19 @@ import {
   createNewVenta,
   sumarTotalVentasPorAnio,
   obtenerVentasTotalesPorMes,
-
+  exportVentasToExcel, 
 } from "../controllers/ventas.controller.js";
 
 import { verifyToken, isModerator } from "../middlewares/authJwt.js";
 
 const router = Router();
 
+
+router.get("/reporte", exportVentasToExcel);
+
 router.get("/", getAllVentas);
 
-// Nueva ruta para obtener las ventas totales por mes del año actual
 router.get("/Mes", obtenerVentasTotalesPorMes);
-
-// Nueva ruta para obtener el total vendido por día
-
-
 router.get("/:id", getVentaById);
 
 router.post("/", [verifyToken, isModerator], createNewVenta);

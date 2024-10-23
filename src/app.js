@@ -28,7 +28,7 @@ import DetalleIngresos from "./routes/detalle.ingresos.routes.js";
 import Ventasroutes from "./routes/ventas.routes.js";
 import Servicio from "./routes/servicio.routes.js";
 import FacturaServicio  from "./routes/facturaServicio.routes.js";
-import HistorialServicio  from "./routes/historialServicio.route.js";
+
 
 
 
@@ -92,7 +92,7 @@ app.use("/api/detalleingreso",DetalleIngresos);
 app.use("/api/ventas",Ventasroutes);
 app.use("/api/servicios",Servicio);
 app.use("/api/facturaServicio",FacturaServicio);
-app.use("/api/HistorialServicio",HistorialServicio);
+
 
 
 

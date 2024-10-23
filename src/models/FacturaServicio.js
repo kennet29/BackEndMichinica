@@ -10,7 +10,10 @@ const facturaSchema = new mongoose.Schema({
     total: { type: Number, required: true },
   }],
   fecha: { type: Date, default: Date.now },
+  iva:{type:Number,required:true},
+  subtotal:{type:Number,required:true},
   totalFactura: { type: Number, required: true },
+
 });
 
 const Factura = mongoose.model('Factura', facturaSchema);

@@ -3,18 +3,16 @@ import {
   getAllDetVentas,
   createNewDetVentas,
   printDetallesVenta,
-  obtenerTotalPorCategoriaEnAnio, // Importa la función del controlador
+  obtenerTotalPorCategoriaEnAnio,
 } from "../controllers/detallesVentas.controller.js";
-import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
+//import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 
 const router = Router();
 
-// Rutas existentes
 router.get("/", getAllDetVentas);
 router.post("/", createNewDetVentas);
 router.get("/:id/print", printDetallesVenta);
 
-// Nueva ruta para obtener total por categoría en un año específico (2024 en este caso)
 router.get("/total-Cat/:anio", async (req, res) => {
   try {
     const anio = req.params.anio;

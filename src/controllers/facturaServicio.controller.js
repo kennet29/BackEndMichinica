@@ -1,4 +1,7 @@
 import Factura from '../models/FacturaServicio.js';
+import ExcelJS from 'exceljs';
+import fs from 'fs';
+import path from 'path';
 
 export const crearFactura = async (req, res) => {
   try {
@@ -35,5 +38,66 @@ export const eliminarFactura = async (req, res) => {
     res.json({ message: 'Factura eliminada' });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+
+export const exportFacturasToExcel = async (req, res) => {
+  const { startDate, endDate } = req.query;
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    return res.status(400).json({ error: 'Fechas inválidas, por favor proporciona un formato de fecha válido (YYYY-MM-DD)' });
+  }
+
+  try {
+    const facturas = await Factura.find({
+      fecha: {
+        $gte: start,
+        $lte: end,
+      }
+    }).populate('servicios.servicio');
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Facturas');
+
+    worksheet.columns = [
+      { header: 'Cliente', key: 'cliente', width: 20 },
+      { header: 'Fecha', key: 'fecha', width: 15 },
+      { header: 'IVA', key: 'iva', width: 10 },
+      { header: 'Total Factura', key: 'totalFactura', width: 15 },
+    ];
+
+
+    facturas.forEach(factura => {
+      worksheet.addRow({
+        cliente: factura.cliente.nombre,
+        fecha: factura.fecha.toISOString().split('T')[0], 
+        iva: factura.iva,
+        totalFactura: factura.totalFactura,
+      });
+
+      factura.servicios.forEach(servicio => {
+        worksheet.addRow({
+          cliente: `  Servicio: ${servicio.servicio.nombre}`,  
+          fecha: `  Cantidad: ${servicio.cantidad}`,
+          totalFactura: `  Total: ${servicio.total}`,
+        });
+      });
+
+      worksheet.addRow([]);  
+    });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=Facturas_${startDate}_to_${endDate}.xlsx`);
+
+    await workbook.xlsx.write(res);
+    res.end();
+    
+  } catch (error) {
+    console.error('Error al exportar las facturas a Excel:', error);
+    res.status(500).json({ error: 'Error al generar el archivo Excel' });
   }
 };

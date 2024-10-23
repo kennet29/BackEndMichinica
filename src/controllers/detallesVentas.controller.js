@@ -1,6 +1,4 @@
 import DetallesVenta from "../models/DetallesVenta.js";
-
-
 import Configuracion from "../models/Configuracion.js";
 
 

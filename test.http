@@ -1,3 +1,9 @@
+
+
+
+GET http://localhost:4000/api/FacturaServicio/reporte?startDate=2024-01-01&endDate=2024-10-22
+
+
 POST  http://localhost:4000/api/auth/signin/?email=ken@gmail.com&password=1234
 
 Content-Type: application/json

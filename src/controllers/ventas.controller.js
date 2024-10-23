@@ -144,3 +144,64 @@ export const getVentaById = async (req, res) => {
       throw error;
     }
   };
+
+
+
+import ExcelJS from 'exceljs';
+
+export const exportVentasToExcel = async (req, res) => {
+  const { startDate, endDate } = req.query;
+
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    return res.status(400).json({ error: 'Fechas inválidas, por favor proporciona un formato de fecha válido (YYYY-MM-DD)' });
+  }
+
+  try {
+
+    const ventas = await Ventas.find({
+      fecha: {
+        $gte: start,
+        $lte: end,
+      }
+    });
+
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Ventas');
+
+
+    worksheet.columns = [
+      { header: 'Cliente', key: 'cliente', width: 30 },
+      { header: 'Fecha', key: 'fecha', width: 15 },
+      { header: 'Descuento', key: 'descuento', width: 10 },
+      { header: 'Subtotal', key: 'subtotal', width: 15 },
+      { header: 'Total', key: 'total', width: 15 },
+      { header: 'Estado', key: 'estado', width: 10 },
+    ];
+
+
+    ventas.forEach(venta => {
+      worksheet.addRow({
+        cliente: venta.cliente,
+        fecha: venta.fecha.toISOString().split('T')[0],  
+        descuento: venta.descuento,
+        subtotal: venta.subtotal,
+        total: venta.total,
+        estado: venta.estado ? 'Completada' : 'Pendiente',
+      });
+    });
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=Ventas_${startDate}_to_${endDate}.xlsx`);
+    await workbook.xlsx.write(res);
+    res.end();
+    
+  } catch (error) {
+    console.error('Error al exportar las ventas a Excel:', error);
+    res.status(500).json({ error: 'Error al generar el archivo Excel' });
+  }
+};
