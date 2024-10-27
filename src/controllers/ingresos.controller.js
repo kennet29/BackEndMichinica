@@ -80,20 +80,20 @@ import excel from 'exceljs';
 export const exportIngresosToExcel = async (req, res) => {
   const { startDate, endDate } = req.query;
 
-  console.log("Fechas recibidas:", { startDate, endDate }); // Agregado para depuración
+  console.log("Fechas recibidas:", { startDate, endDate }); 
 
   try {
     const start = new Date(startDate);
     const end = new Date(endDate);
     end.setHours(23, 59, 59, 999);
 
-    console.log("Fechas convertidas a Date:", { start, end }); // Agregado para depuración
+    console.log("Fechas convertidas a Date:", { start, end }); 
 
     const ingresos = await Ingresos.find({
       fecha: { $gte: start, $lte: end },
     }).populate('id_proveedor');
 
-    console.log("Ingresos encontrados:", ingresos); // Agregado para depuración
+    console.log("Ingresos encontrados:", ingresos); 
 
     const workbook = new excel.Workbook();
     const worksheet = workbook.addWorksheet('Ingresos');
