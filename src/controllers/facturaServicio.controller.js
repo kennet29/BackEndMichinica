@@ -108,9 +108,7 @@ export const editarFactura = async (req, res) => {
     const { id } = req.params; 
     const datosActualizados = req.body;
     const facturaActualizada = await Factura.findByIdAndUpdate(id, datosActualizados, { new: true, runValidators: true }).populate('servicios.servicio');
-    if (!facturaActualizada) {
-      return res.status(404).json({ message: 'Factura no encontrada' });
-    }
+  
     res.json(facturaActualizada); 
   } catch (error) {
     res.status(400).json({ message: error.message }); 
