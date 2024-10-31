@@ -4,7 +4,8 @@ import {
   obtenerFacturas, 
   obtenerFacturaPorId, 
   eliminarFactura,
-  exportFacturasToExcel 
+  exportFacturasToExcel,
+  editarFactura
 } from '../controllers/facturaServicio.controller.js';
 
 const router = Router();
@@ -18,5 +19,7 @@ router.get('/', obtenerFacturas);
 router.get('/:id', obtenerFacturaPorId);
 
 router.delete('/:id', eliminarFactura);
+router.put('/factura/:id', editarFactura);
+
 
 export default router;
