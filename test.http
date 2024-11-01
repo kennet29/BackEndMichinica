@@ -1,33 +1,46 @@
 
-GET https://apimafy.zeabur.app/api/Ingresos/reportes?startDate=2024-01-01&endDate=2024-10-23
 
 
-GET http://localhost:4000/api/FacturaServicio/reporte?startDate=2024-01-01&endDate=2024-10-22
 
-
-POST  http://localhost:4000/api/auth/signin/?email=ken@gmail.com&password=1234
-
-Content-Type: application/json
+PUT https://apitammy-closset.fra1.zeabur.app/api/FacturaServicio/factura/6719b245fc4bb5d92614fa3c
 
 {
-  "id_ventas": "659e144b26319c67332552fb",
-  "articulos": [
-    {
-      "id_articulo": "659af68647b7d367ebc29354",
-      "id_categoria": "6584fdd7331de1c471259dc1",
-      "id_marca": "6566b1ff1693e94218aabf6e",
-      "id_color": "6566b0ad1693e94218aabf51",
-      "id_estilo": "6584658fef6c4c4663141a25",
-      "id_material": "656156daf9c6ffbe9552ecf2",
-      "id_talla": "6585dce4f8cb50dfa8178bb1",
-      "id_diseño": "65387375e2fbfdbd8119fe5c",
-      "id_promocion": "656406ab15f89660d2673fb4",
-      "cantidad": 3,
-      "precio": 25.99,
-      "subtotal": 77.97,
-      "descuento": 5
-    }
-  ],
-  "total": 72.97
+    "cliente": {
+        "nombre": "ken"
+    },
+    "anulado": false,
+    "_id": "6719b245fc4bb5d92614fa3c",
+    "servicios": [
+        {
+            "servicio": {
+                "_id": "67070adf8dfdfd4988f87fb4",
+                "nombre": "Servicio 3",
+                "descripcion": " Descripcion Genericas",
+                "precio": 400,
+                "activo": false,
+                "__v": 0
+            },
+            "cantidad": 1,
+            "total": 400,
+            "_id": "6719b245fc4bb5d92614fa3d"
+        },
+        {
+            "servicio": {
+                "_id": "67070ae98dfdfd4988f87fb7",
+                "nombre": "Servicio 2",
+                "descripcion": " Descripcion Generica",
+                "precio": 200,
+                "activo": false,
+                "__v": 0
+            },
+            "cantidad": 1,
+            "total": 200,
+            "_id": "6719b245fc4bb5d92614fa3e"
+        }
+    ],
+    "fecha": "2024-10-23T00:00:00.000Z",
+    "iva": 90,
+    "subtotal": 600,
+    "totalFactura": 600,
+    "__v": 0
 }
-

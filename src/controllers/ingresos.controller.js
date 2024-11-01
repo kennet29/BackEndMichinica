@@ -93,7 +93,7 @@ export const exportIngresosToExcel = async (req, res) => {
       fecha: { $gte: start, $lte: end },
     }).populate('id_proveedor');
 
-    console.log("Ingresos encontrados:", ingresos); 
+
 
     const workbook = new excel.Workbook();
     const worksheet = workbook.addWorksheet('Ingresos');
