@@ -61,7 +61,7 @@ export const exportFacturasToExcel = async (req, res) => {
         $gte: start,
         $lte: end,
       }
-    }).populate('servicios.servicio'); // Asegúrate de tener el campo `servicio` bien configurado en el esquema
+    }).populate('servicios.servicio');
 
     // Crear un nuevo libro y hoja de cálculo con ExcelJS
     const workbook = new ExcelJS.Workbook();
@@ -75,6 +75,14 @@ export const exportFacturasToExcel = async (req, res) => {
       { header: 'Total Factura', key: 'totalFactura', width: 15 },
     ];
 
+    // Aplicar estilo a las cabeceras
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      pattern: 'solid',
+      fgColor: { argb: 'FFCCCCCC' } // Cambia este color por el que desees
+    };
+    worksheet.getRow(1).alignment = { horizontal: 'center' };
+
     // Agregar las filas de facturas
     facturas.forEach(factura => {
       worksheet.addRow({
@@ -82,7 +90,10 @@ export const exportFacturasToExcel = async (req, res) => {
         fecha: factura.fecha.toISOString().split('T')[0], 
         iva: factura.iva,
         totalFactura: factura.totalFactura,
-      });
+      }).font = { bold: false }; // Asegúrate de que las filas de datos no estén en negrita
+
+      // Centrar texto de la fila de datos
+      worksheet.lastRow.alignment = { horizontal: 'center' };
 
       // Agregar filas adicionales para cada servicio en la factura
       factura.servicios.forEach(servicio => {
@@ -90,7 +101,10 @@ export const exportFacturasToExcel = async (req, res) => {
           cliente: `  Servicio: ${servicio.servicio.nombre}`,  
           fecha: `  Cantidad: ${servicio.cantidad}`,
           totalFactura: `  Total: ${servicio.total}`,
-        });
+        }).font = { bold: false }; // Asegúrate de que estas filas también no estén en negrita
+
+        // Centrar texto de las filas de servicios
+        worksheet.lastRow.alignment = { horizontal: 'center' };
       });
 
       // Agregar una fila en blanco después de cada factura para separar visualmente
