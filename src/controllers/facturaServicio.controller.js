@@ -86,6 +86,7 @@ export const exportFacturasToExcel = async (req, res) => {
     // Agregar las filas de facturas
     facturas.forEach(factura => {
       worksheet.addRow({
+        id: factura._id,
         cliente: factura.cliente.nombre,
         fecha: factura.fecha.toISOString().split('T')[0], 
         iva: factura.iva,
