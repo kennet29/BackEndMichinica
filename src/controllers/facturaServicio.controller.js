@@ -45,24 +45,29 @@ export const eliminarFactura = async (req, res) => {
 export const exportFacturasToExcel = async (req, res) => {
   const { startDate, endDate } = req.query;
 
+  // Convertir las fechas de inicio y fin a objetos Date
   const start = new Date(startDate);
   const end = new Date(endDate);
 
+  // Validar que las fechas sean válidas
   if (isNaN(start.getTime()) || isNaN(end.getTime())) {
     return res.status(400).json({ error: 'Fechas inválidas, por favor proporciona un formato de fecha válido (YYYY-MM-DD)' });
   }
 
   try {
+    // Consultar facturas dentro del rango de fechas
     const facturas = await Factura.find({
       fecha: {
         $gte: start,
         $lte: end,
       }
-    }).populate('servicios.servicio');
+    }).populate('servicios.servicio'); // Asegúrate de tener el campo `servicio` bien configurado en el esquema
 
+    // Crear un nuevo libro y hoja de cálculo con ExcelJS
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Facturas');
 
+    // Definir las columnas de la hoja de cálculo
     worksheet.columns = [
       { header: 'Cliente', key: 'cliente', width: 20 },
       { header: 'Fecha', key: 'fecha', width: 15 },
@@ -70,7 +75,7 @@ export const exportFacturasToExcel = async (req, res) => {
       { header: 'Total Factura', key: 'totalFactura', width: 15 },
     ];
 
-
+    // Agregar las filas de facturas
     facturas.forEach(factura => {
       worksheet.addRow({
         cliente: factura.cliente.nombre,
@@ -79,6 +84,7 @@ export const exportFacturasToExcel = async (req, res) => {
         totalFactura: factura.totalFactura,
       });
 
+      // Agregar filas adicionales para cada servicio en la factura
       factura.servicios.forEach(servicio => {
         worksheet.addRow({
           cliente: `  Servicio: ${servicio.servicio.nombre}`,  
@@ -87,21 +93,23 @@ export const exportFacturasToExcel = async (req, res) => {
         });
       });
 
-      worksheet.addRow([]);  
+      // Agregar una fila en blanco después de cada factura para separar visualmente
+      worksheet.addRow([]);
     });
 
+    // Configurar encabezados para la descarga de archivo Excel
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename=Facturas_${startDate}_to_${endDate}.xlsx`);
 
+    // Escribir el archivo Excel en la respuesta
     await workbook.xlsx.write(res);
     res.end();
-    
+
   } catch (error) {
     console.error('Error al exportar las facturas a Excel:', error);
     res.status(500).json({ error: 'Error al generar el archivo Excel' });
   }
 };
-
 
 export const editarFactura = async (req, res) => {
   try {

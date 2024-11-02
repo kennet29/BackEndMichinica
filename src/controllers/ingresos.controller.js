@@ -3,9 +3,6 @@ import fs from 'fs';
 import PDFDocument from 'pdfkit';
 import Proveedor from "../models/Proveedor.js"; 
 
-
-
-
 export const getAllIngresos = async (req, res) => {
     try {
       const ingresos = await Ingresos.find();
@@ -92,8 +89,6 @@ export const exportIngresosToExcel = async (req, res) => {
     const ingresos = await Ingresos.find({
       fecha: { $gte: start, $lte: end },
     }).populate('id_proveedor');
-
-
 
     const workbook = new excel.Workbook();
     const worksheet = workbook.addWorksheet('Ingresos');
