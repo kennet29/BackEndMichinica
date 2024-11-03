@@ -45,17 +45,14 @@ export const eliminarFactura = async (req, res) => {
 export const exportFacturasToExcel = async (req, res) => {
   const { startDate, endDate } = req.query;
 
-  // Convertir las fechas de inicio y fin a objetos Date
   const start = new Date(startDate);
   const end = new Date(endDate);
 
-  // Validar que las fechas sean válidas
   if (isNaN(start.getTime()) || isNaN(end.getTime())) {
     return res.status(400).json({ error: 'Fechas inválidas, por favor proporciona un formato de fecha válido (YYYY-MM-DD)' });
   }
 
   try {
-    // Consultar facturas dentro del rango de fechas
     const facturas = await Factura.find({
       fecha: {
         $gte: start,
@@ -63,11 +60,9 @@ export const exportFacturasToExcel = async (req, res) => {
       }
     }).populate('servicios.servicio');
 
-    // Crear un nuevo libro y hoja de cálculo con ExcelJS
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Facturas');
 
-    // Definir las columnas de la hoja de cálculo
     worksheet.columns = [
       { header: 'Cliente', key: 'cliente', width: 20 },
       { header: 'Fecha', key: 'fecha', width: 15 },
@@ -75,15 +70,13 @@ export const exportFacturasToExcel = async (req, res) => {
       { header: 'Total Factura', key: 'totalFactura', width: 15 },
     ];
 
-    // Aplicar estilo a las cabeceras
     worksheet.getRow(1).font = { bold: true };
     worksheet.getRow(1).fill = {
       pattern: 'solid',
-      fgColor: { argb: 'FFCCCCCC' } // Cambia este color por el que desees
+      fgColor: { argb: 'FFCCCCCC' }
     };
     worksheet.getRow(1).alignment = { horizontal: 'center' };
 
-    // Agregar las filas de facturas
     facturas.forEach(factura => {
       worksheet.addRow({
         id: factura._id,
@@ -91,32 +84,24 @@ export const exportFacturasToExcel = async (req, res) => {
         fecha: factura.fecha.toISOString().split('T')[0], 
         iva: factura.iva,
         totalFactura: factura.totalFactura,
-      }).font = { bold: false }; // Asegúrate de que las filas de datos no estén en negrita
+      }).font = { bold: false }; 
 
-      // Centrar texto de la fila de datos
       worksheet.lastRow.alignment = { horizontal: 'center' };
 
-      // Agregar filas adicionales para cada servicio en la factura
       factura.servicios.forEach(servicio => {
         worksheet.addRow({
           cliente: `  Servicio: ${servicio.servicio.nombre}`,  
           fecha: `  Cantidad: ${servicio.cantidad}`,
           totalFactura: `  Total: ${servicio.total}`,
-        }).font = { bold: false }; // Asegúrate de que estas filas también no estén en negrita
-
-        // Centrar texto de las filas de servicios
+        }).font = { bold: false }; 
         worksheet.lastRow.alignment = { horizontal: 'center' };
       });
-
-      // Agregar una fila en blanco después de cada factura para separar visualmente
       worksheet.addRow([]);
     });
 
-    // Configurar encabezados para la descarga de archivo Excel
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename=Facturas_${startDate}_to_${endDate}.xlsx`);
 
-    // Escribir el archivo Excel en la respuesta
     await workbook.xlsx.write(res);
     res.end();
 
@@ -131,7 +116,6 @@ export const editarFactura = async (req, res) => {
     const { id } = req.params; 
     const datosActualizados = req.body;
     const facturaActualizada = await Factura.findByIdAndUpdate(id, datosActualizados, { new: true, runValidators: true }).populate('servicios.servicio');
-  
     res.json(facturaActualizada); 
   } catch (error) {
     res.status(400).json({ message: error.message }); 
