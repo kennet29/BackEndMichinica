@@ -2,6 +2,9 @@ import Factura from '../models/FacturaServicio.js';
 import ExcelJS from 'exceljs';
 import fs from 'fs';
 import path from 'path';
+import PDFDocument from 'pdfkit';
+import { format } from 'date-fns';
+import Configuracion from '../models/Configuracion.js';
 
 export const crearFactura = async (req, res) => {
   try {
@@ -119,5 +122,105 @@ export const editarFactura = async (req, res) => {
     res.json(facturaActualizada); 
   } catch (error) {
     res.status(400).json({ message: error.message }); 
+  }
+};
+
+
+
+export const printFactura = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const factura = await Factura.findById(id)
+      .populate({
+        path: 'servicios.servicio',
+        model: 'Servicio',
+        select: 'nombre',
+      });
+
+    if (!factura) {
+      return res.status(404).json({ message: 'Factura no encontrada' });
+    }
+
+    const configuracion = await Configuracion.findOne();
+    if (!configuracion) {
+      return res.status(404).json({ message: 'Configuración no encontrada' });
+    }
+
+    const fechaFactura = format(new Date(factura.fecha), 'dd/MM/yyyy');
+
+
+    const pdfDoc = new PDFDocument({
+      size: [240, 400],
+    });
+
+    let currentYPosition = 30;
+
+    const centerXPositionBusinessName = (pdfDoc.page.width - pdfDoc.widthOfString(configuracion.nombre_negocio)) / 2;
+    pdfDoc
+      .font('Helvetica-Bold')
+      .fontSize(15)
+      .text(configuracion.nombre_negocio, centerXPositionBusinessName, currentYPosition);
+
+    currentYPosition += 35;
+
+    const centerXPositionTextBlock = (pdfDoc.page.width - pdfDoc.widthOfString('Direccion: ' + configuracion.direccion)) / 2;
+
+    pdfDoc
+      .font('Helvetica')
+      .fontSize(8)
+      .text('Direccion: ' + configuracion.direccion, centerXPositionTextBlock, currentYPosition)
+      .text(`${'Telefono: ' + configuracion.telefono_1} / ${configuracion.telefono_2}`, centerXPositionTextBlock, currentYPosition + 10);
+
+    currentYPosition += 20;
+
+    pdfDoc
+      .font('Helvetica')
+      .fontSize(8)
+      .text(`Cliente: ${factura.cliente.nombre}`, centerXPositionTextBlock, currentYPosition)
+      .text(`Fecha: ${fechaFactura}`, centerXPositionTextBlock, currentYPosition + 15);
+
+    currentYPosition += 40;
+
+    pdfDoc
+      .font('Helvetica-Bold')
+      .fontSize(6)
+      .text('Servicio', 15, currentYPosition)
+      .text('Cant', 120, currentYPosition)
+      .text('Total', 170, currentYPosition);
+
+    let yPosition = currentYPosition + 20;
+
+    factura.servicios.forEach((servicio) => {
+      pdfDoc
+        .font('Helvetica')
+        .fontSize(6)
+        .text(servicio.servicio.nombre, 15, yPosition)
+        .text(servicio.cantidad.toString(), 120, yPosition)
+        .text(servicio.total.toFixed(2), 170, yPosition);
+
+      yPosition += 15;
+    });
+
+    pdfDoc
+      .font('Helvetica-Bold')
+      .fontSize(8)
+      .text(`Subtotal: ${factura.subtotal.toFixed(2)}`, 15, yPosition + 10)
+      .text(`IVA: ${factura.iva.toFixed(2)}`, 15, yPosition + 25)
+      .text(`Total: ${factura.totalFactura.toFixed(2)}`, 15, yPosition + 40);
+
+    const centerXPositionThanks = (pdfDoc.page.width - pdfDoc.widthOfString('¡Gracias por su compra!')) / 2;
+    pdfDoc
+      .font('Helvetica-Oblique')
+      .fontSize(10)
+      .text('¡Gracias por su compra!', centerXPositionThanks, yPosition + 70);
+
+    res.setHeader('Content-Disposition', `attachment; filename=factura_${id}.pdf`);
+    res.setHeader('Content-Type', 'application/pdf');
+    pdfDoc.pipe(res);
+    pdfDoc.end();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error generando el PDF' });
   }
 };
