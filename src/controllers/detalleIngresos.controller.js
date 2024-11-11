@@ -63,6 +63,8 @@ export const deleteDetIngresoByID = async (req, res) => {
   }
 };
 
+import { format } from 'date-fns'; 
+
 export const printDetalleIngresos = async (req, res) => {
   const { id } = req.params;
 
@@ -107,94 +109,117 @@ export const printDetalleIngresos = async (req, res) => {
         path: 'articulos.id_estilo',
         model: 'Estilo',
         select: 'estilo',
-      })
-      .populate({
-        path: 'articulos.id_color',
-        model: 'Color',
-        select: 'color',
       });
 
-     
-    
-      if (!detalleIngresos) {
-        return res.status(404).json({ message: 'Detalle de ingresos no encontrado' });
-      }
-  
-      const configuracion = await Configuracion.findOne();
-  
-      if (!configuracion) {
-        return res.status(404).json({ message: 'Configuración no encontrada' });
-      }
-  
-      const pdfDoc = new PDFDocument();
-      const filePath = path.resolve(`detalleIngresos_${id}.pdf`);
-      const writeStream = fs.createWriteStream(filePath);
-  
-      pdfDoc.pipe(writeStream);
-  
-      // Encabezado with Configuracion data
-      pdfDoc.fontSize(18).text(configuracion.nombre_negocio, { align: 'center' });
-      pdfDoc.fontSize(10).text(`${configuracion.direccion} | Teléfono: ${configuracion.telefono_1}/ ${configuracion.telefono_2} `, { align: 'center' });
-  
-      pdfDoc.moveDown();
-  
-      // Detalles del recibo
-      const formattedDate = new Date(detalleIngresos.createdAt).toLocaleString('es-ES');
-      pdfDoc.fontSize(10).text(`ID-Ingreso: ${detalleIngresos._id}`, { align: 'center' });
-      pdfDoc.fontSize(10).text(`Fecha: ${formattedDate}`, { align: 'center' });
-  
-      pdfDoc.moveDown();
-  
-      // Tabla de artículos
-      const totalWidth = 500;
-      const totalHeight = 230; // Altura del borde de la tabla
-      const centerX = ((pdfDoc.page.width - totalWidth) / 2 + 5);
-      const headerY = pdfDoc.y + 10;
-  
-      // Añadir borde exterior a la tabla con altura ajustada a 500
-      pdfDoc.rect(centerX, headerY - 5, totalWidth, totalHeight).stroke();
-  
-      pdfDoc
-        .fontSize(10)
-        .text('Artículo', centerX + 10, headerY)
-        .text('Categoría', centerX + 60, headerY)
-        .text('Marca', centerX + 120, headerY)
-        .text('Talla', centerX + 170, headerY)
-        .text('Color', centerX + 210, headerY)
-        .text('Precio', centerX + 250, headerY)
-        .text('Cantidad', centerX + 300, headerY)
-        .text('Subtotal', centerX + 360, headerY)
-        .text('IVA', centerX + 440, headerY);
-  
-      detalleIngresos.articulos.forEach((articulo, index) => {
-        const yPosition = pdfDoc.y + 5 + index * 20;
-  
-        pdfDoc
-          .fontSize(10)
-          .text(articulo.id_articulo.nombre, centerX + 10, yPosition + 10)
-          .text(articulo.id_categoria.categoria, centerX + 60, yPosition + 10)
-          .text(articulo.id_marca.marca, centerX + 120, yPosition + 10)
-          .text(articulo.id_talla.talla, centerX + 170, yPosition + 10)
-          .text(articulo.id_color.color, centerX + 210, yPosition + 10)
-          .text(articulo.precio_proveedor.toFixed(2), centerX + 250, yPosition + 10)
-          .text(articulo.cantidad.toString(), centerX + 300, yPosition + 10)
-          .text(articulo.subtotal.toFixed(2), centerX + 360, yPosition + 10)
-          .text(articulo.iva.toFixed(2), centerX + 440, yPosition + 10);
-      });
-  
-      pdfDoc.moveDown();
-      pdfDoc.fontSize(10).text(`Total C$: ${detalleIngresos.total.toFixed(2)}`, 75, 400);
-  
-      pdfDoc.end();
-  
-      writeStream.on('finish', () => {
-        res.setHeader('Content-Disposition', `attachment; filename=detalleIngresos_${id}.pdf`);
-        res.setHeader('Content-Type', 'application/pdf');
-        res.status(200).sendFile(filePath);
-      });
-  
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Error generando el PDF' });
+    if (!detalleIngresos) {
+      return res.status(404).json({ message: 'Detalle de ingresos no encontrado' });
     }
-  };
+
+    const configuracion = await Configuracion.findOne();
+
+    if (!configuracion) {
+      return res.status(404).json({ message: 'Configuración no encontrada' });
+    }
+
+    const pdfDoc = new PDFDocument({ size: 'A4' });
+    let currentYPosition = 30;
+
+    const centerXPositionBusinessName = (pdfDoc.page.width - pdfDoc.widthOfString(configuracion.nombre_negocio)) / 2;
+
+    // Encabezado con datos de Configuración
+    pdfDoc
+      .font('Helvetica-Bold')
+      .fontSize(20)
+      .text(configuracion.nombre_negocio, centerXPositionBusinessName, currentYPosition);
+
+    currentYPosition += 35;
+
+    // Información de dirección y teléfono alineada a la derecha
+    const leftMargin = 50;
+    pdfDoc
+      .font('Helvetica')
+      .fontSize(12)
+      .text(`Dirección: ${configuracion.direccion}`, leftMargin, currentYPosition)
+      .text(`Teléfono: ${configuracion.telefono_1} / ${configuracion.telefono_2}`, leftMargin, currentYPosition + 15);
+
+    currentYPosition += 30;
+
+    const formattedDate = format(new Date(detalleIngresos.createdAt), 'dd/MM/yyyy');
+    pdfDoc
+      .font('Helvetica')
+      .fontSize(12)
+      .text(`ID-Ingreso: ${detalleIngresos._id}`, leftMargin, currentYPosition)
+      .text(`Fecha: ${formattedDate}`, leftMargin, currentYPosition + 15);
+
+    currentYPosition += 30;
+
+    // Tabla de artículos con bordes y márgenes internos
+    let yPosition = currentYPosition + 20;
+    const totalWidth = 520;
+    const startX = (pdfDoc.page.width - totalWidth) / 2;
+    const cellPadding = 5; // Espacio interno en cada celda
+
+    // Encabezado de la tabla
+    pdfDoc
+      .font('Helvetica-Bold')
+      .fontSize(10)
+      .text('Artículo', startX + cellPadding, yPosition)
+      .text('Categoría', startX + 60 + cellPadding, yPosition)
+      .text('Marca', startX + 115 + cellPadding, yPosition)
+      .text('Talla', startX + 170 + cellPadding, yPosition)
+      .text('Color', startX + 225 + cellPadding, yPosition)
+      .text('Precio', startX + 275 + cellPadding, yPosition)
+      .text('Cantidad', startX + 340 + cellPadding, yPosition)
+      .text('Subtotal', startX + 395 + cellPadding, yPosition)
+      .text('IVA', startX + 455 + cellPadding, yPosition);
+
+    // Dibuja borde para el encabezado
+    pdfDoc.rect(startX, yPosition - 2, totalWidth, 20).stroke();
+
+    yPosition += 20;
+
+    // Filas de artículos
+    detalleIngresos.articulos.forEach((articulo) => {
+      pdfDoc
+        .font('Helvetica')
+        .fontSize(10)
+        .text(articulo.id_articulo.nombre, startX + cellPadding, yPosition)
+        .text(articulo.id_categoria.categoria, startX + 60 + cellPadding, yPosition)
+        .text(articulo.id_marca.marca, startX + 115 + cellPadding, yPosition)
+        .text(articulo.id_talla.talla, startX + 170 + cellPadding, yPosition)
+        .text(articulo.id_color.color, startX + 225 + cellPadding, yPosition)
+        .text(articulo.precio_proveedor.toFixed(2), startX + 275 + cellPadding, yPosition)
+        .text(articulo.cantidad.toString(), startX + 340 + cellPadding, yPosition)
+        .text(articulo.subtotal.toFixed(2), startX + 395 + cellPadding, yPosition)
+        .text(articulo.iva.toFixed(2), startX + 455 + cellPadding, yPosition);
+
+      // Dibuja borde alrededor de cada fila
+      pdfDoc.rect(startX, yPosition - 2, totalWidth, 15).stroke();
+
+      yPosition += 15;
+    });
+
+    currentYPosition = yPosition + 20;
+
+    pdfDoc
+      .font('Helvetica-Bold')
+      .fontSize(12)
+      .text(`Total C$: ${detalleIngresos.total.toFixed(2)}`, 75, currentYPosition);
+
+    const centerXPositionThanks = (pdfDoc.page.width - pdfDoc.widthOfString('¡Gracias por su compra!')) / 2;
+
+    pdfDoc
+      .font('Helvetica-Oblique')
+      .fontSize(14)
+      .text('¡Gracias por su compra!', centerXPositionThanks, currentYPosition + 20);
+
+    res.setHeader('Content-Disposition', `attachment; filename=detalleIngresos_${id}.pdf`);
+    res.setHeader('Content-Type', 'application/pdf');
+    pdfDoc.pipe(res);
+    pdfDoc.end();
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error generando el PDF' });
+  }
+};
