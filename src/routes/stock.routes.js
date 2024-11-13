@@ -18,6 +18,6 @@ router.post("/", createNewStock,[verifyToken,isModerator]);
 router.put("/:id",[verifyToken,isModerator], updateExistenciasByID);
 
 // Nueva ruta para actualizar todos los campos
-router.put("/update/:id",[verifyToken,isModerator], updateStockByID);
+router.put("/update/:id",[verifyToken], updateStockByID);
 
 export default router;
