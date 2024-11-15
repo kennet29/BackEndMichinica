@@ -134,15 +134,16 @@ export const printDetalleIngresos = async (req, res) => {
 
     currentYPosition += 35;
 
-    // Información de dirección y teléfono alineada a la derecha
+    // Información de dirección, teléfono y tasa de cambio alineada a la derecha
     const leftMargin = 50;
     pdfDoc
       .font('Helvetica')
       .fontSize(12)
       .text(`Dirección: ${configuracion.direccion}`, leftMargin, currentYPosition)
-      .text(`Teléfono: ${configuracion.telefono_1} / ${configuracion.telefono_2}`, leftMargin, currentYPosition + 15);
+      .text(`Teléfono: ${configuracion.telefono_1} / ${configuracion.telefono_2}`, leftMargin, currentYPosition + 15)
+      .text(`Tasa de cambio USD: ${configuracion.tipo_de_cambio_dolar.toFixed(2)}`, leftMargin, currentYPosition + 30);
 
-    currentYPosition += 30;
+    currentYPosition += 50;
 
     const formattedDate = format(new Date(detalleIngresos.createdAt), 'dd/MM/yyyy');
     pdfDoc
@@ -155,7 +156,7 @@ export const printDetalleIngresos = async (req, res) => {
 
     // Tabla de artículos con bordes y márgenes internos
     let yPosition = currentYPosition + 20;
-    const totalWidth = 520;
+    const totalWidth = 550;
     const startX = (pdfDoc.page.width - totalWidth) / 2;
     const cellPadding = 5; // Espacio interno en cada celda
 
@@ -199,19 +200,24 @@ export const printDetalleIngresos = async (req, res) => {
       yPosition += 15;
     });
 
+    // Obtener el tipo de cambio y calcular el total en dólares
+    const tipoDeCambio = configuracion.tipo_de_cambio_dolar;
+    const totalEnDolares = (detalleIngresos.total / tipoDeCambio).toFixed(2); // Total en dólares
+
     currentYPosition = yPosition + 20;
 
     pdfDoc
       .font('Helvetica-Bold')
       .fontSize(12)
-      .text(`Total C$: ${detalleIngresos.total.toFixed(2)}`, 75, currentYPosition);
+      .text(`Total C$: ${detalleIngresos.total.toFixed(2)}`, 75, currentYPosition)
+      .text(`Total en dólares: $${totalEnDolares}`, 75, currentYPosition + 15); // Total en dólares
 
     const centerXPositionThanks = (pdfDoc.page.width - pdfDoc.widthOfString('¡Gracias por su compra!')) / 2;
 
     pdfDoc
       .font('Helvetica-Oblique')
       .fontSize(14)
-      .text('¡Gracias por su compra!', centerXPositionThanks, currentYPosition + 20);
+      .text('¡Gracias por su compra!', centerXPositionThanks, currentYPosition + 40);
 
     res.setHeader('Content-Disposition', `attachment; filename=detalleIngresos_${id}.pdf`);
     res.setHeader('Content-Type', 'application/pdf');

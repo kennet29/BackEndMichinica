@@ -80,8 +80,8 @@ export const createNewDetVentas = async (req, res) => {
   }
 };
 
+import { format } from 'date-fns'; 
 import PDFDocument from 'pdfkit';
-import { format } from 'date-fns';
 
 export const printDetallesVenta = async (req, res) => {
   const { id } = req.params;
@@ -120,9 +120,9 @@ export const printDetallesVenta = async (req, res) => {
       });
 
     if (!detallesVenta) {
-      
       return res.status(404).json({ message: 'Detalles de ventas no encontrados' });
     }
+
     const fechaCreacion = format(new Date(detallesVenta.id_ventas.createdAt), 'dd/MM/yyyy');
     const configuracion = await Configuracion.findOne();
 
@@ -130,12 +130,14 @@ export const printDetallesVenta = async (req, res) => {
       return res.status(404).json({ message: 'Configuración no encontrada' });
     }
 
+    // Calcular total en dólares
+    const totalEnDolares = (detallesVenta.id_ventas.total / configuracion.tipo_de_cambio_dolar).toFixed(2);
+
     const pdfDoc = new PDFDocument({
       size: [240, 400],
     });
 
     let currentYPosition = 30;
-
     const centerXPositionBusinessName = (pdfDoc.page.width - pdfDoc.widthOfString(configuracion.nombre_negocio)) / 2;
 
     pdfDoc
@@ -155,16 +157,12 @@ export const printDetallesVenta = async (req, res) => {
 
     currentYPosition += 20;
 
-
-
-  pdfDoc
-  .font('Helvetica')
-  .fontSize(8)
-  .text(`ID-Ventas: ${detallesVenta.id_ventas._id}`, centerXPositionTextBlock, currentYPosition)
-  .text(`Cliente: ${detallesVenta.id_ventas.cliente}`, centerXPositionTextBlock, currentYPosition + 15)
-  .text(`Fecha de Creación: ${fechaCreacion}`, centerXPositionTextBlock, currentYPosition + 30);
-
-currentYPosition += 20;
+    pdfDoc
+      .font('Helvetica')
+      .fontSize(8)
+      .text(`ID-Ventas: ${detallesVenta.id_ventas._id}`, centerXPositionTextBlock, currentYPosition)
+      .text(`Cliente: ${detallesVenta.id_ventas.cliente}`, centerXPositionTextBlock, currentYPosition + 15)
+      .text(`Fecha de Creación: ${fechaCreacion}`, centerXPositionTextBlock, currentYPosition + 30);
 
     let yPosition = 140;
 
@@ -183,7 +181,7 @@ currentYPosition += 20;
       pdfDoc
         .font('Helvetica')
         .fontSize(6)
-        .text(`${articulo.id_articulo.nombre}, ${articulo.id_categoria.categoria}, ${articulo.id_marca.marca}, ${articulo.id_color.color}, ${articulo.id_talla.talla}`, 15, yPosition)
+        .text(`${articulo.id_articulo.nombre}, ${articulo.id_marca.marca}, ${articulo.id_color.color}, ${articulo.id_talla.talla}`, 15, yPosition)
         .text(articulo.precio.toString(), 120, yPosition)
         .text(articulo.descuento.toString(), 145, yPosition)
         .text(articulo.cantidad.toString(), 170, yPosition)
@@ -192,17 +190,18 @@ currentYPosition += 20;
       yPosition += 15;
     });
 
+    pdfDoc
+      .font('Helvetica-Bold')
+      .fontSize(10)
+      .text(`Total C$: ${detallesVenta.id_ventas.total}`, 15, yPosition + 20)
+      .text(`Total en USD: $ ${totalEnDolares}`, 15, yPosition + 35); 
+
     const centerXPositionThanks = (pdfDoc.page.width - pdfDoc.widthOfString('¡Gracias por su compra!')) / 2;
 
     pdfDoc
-    .font('Helvetica-Bold')
-    .fontSize(10)
-    .text(`Total: ${detallesVenta.id_ventas.total}`, 15, yPosition + 20);
-
-pdfDoc
-  .font('Helvetica-Oblique')
-  .fontSize(12)
-  .text('¡Gracias por su compra!', centerXPositionThanks, yPosition + 50);
+      .font('Helvetica-Oblique')
+      .fontSize(12)
+      .text('¡Gracias por su compra!', centerXPositionThanks, yPosition + 50);
 
     res.setHeader('Content-Disposition', `attachment; filename=recibo_${id}.pdf`);
     res.setHeader('Content-Type', 'application/pdf');
