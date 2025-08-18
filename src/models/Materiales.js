@@ -1,26 +1,18 @@
 import mongoose from "mongoose";
+const { Schema, model } = mongoose;
 
-const materialesSchema = new mongoose.Schema(
-  {
-   
-    material: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    descripcion: {
-      type: String,
-      required: true,
-    },
-    estado: {
-      type: Boolean,
-      required: true,
-    },
-  },
-  {
-    timestamps: true,
-    versionKey: false,
+const MaterialSchema = new Schema({
+  idNumerico: { type: Number, unique: true },
+  nombre: { type: String, required: true }
+}, { timestamps: true });
+
+MaterialSchema.pre("save", async function(next) {
+  if (!this.idNumerico) {
+    const max = await this.constructor.findOne().sort({ idNumerico: -1 }).select("idNumerico");
+    this.idNumerico = max ? max.idNumerico + 1 : 1;
   }
-);
+  next();
+});
 
-export default mongoose.model("Material", materialesSchema);
+const Material = model("Material", MaterialSchema);
+export default Material;

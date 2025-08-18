@@ -1,93 +1,77 @@
-import Categoria from "../models/Categorias.js";
+import Categoria from "../models/Categoria.js";
 
-
-export const getAllCategorias = async (req, res) => {
+// 📌 Crear categoría
+export const createCategoria = async (req, res) => {
   try {
-    const categorias = await Categoria.find();
-    return res.json(categorias);
+    const { nombre, descripcion } = req.body;
+
+    // ✅ Validar campos obligatorios
+    if (!nombre || !descripcion) {
+      return res.status(400).json({ message: "El nombre y la descripción son requeridos" });
+    }
+
+    const categoria = new Categoria({ nombre, descripcion });
+    await categoria.save();
+
+    res.status(201).json(categoria);
   } catch (error) {
-    console.error('Error fetching categorias', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Error al crear la categoría", error: error.message });
   }
 };
 
+// 📌 Obtener todas las categorías
+export const getCategorias = async (req, res) => {
+  try {
+    const categorias = await Categoria.find().sort({ createdAt: -1 });
+    res.status(200).json(categorias);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener las categorías", error: error.message });
+  }
+};
+
+// 📌 Obtener categoría por ID
 export const getCategoriaById = async (req, res) => {
   try {
-    const { categoriaId } = req.params;
-
-    const categoria = await Categoria.findById(categoriaId);
+    const categoria = await Categoria.findById(req.params.id);
     if (!categoria) {
-      return res.status(404).json({ message: 'Categoria not found' });
+      return res.status(404).json({ message: "Categoría no encontrada" });
     }
     res.status(200).json(categoria);
   } catch (error) {
-    console.error('Error fetching categoria by ID', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Error al obtener la categoría", error: error.message });
   }
 };
 
-
-
-export const updateCategoriaById = async (req, res) => {
+// 📌 Actualizar categoría
+export const updateCategoria = async (req, res) => {
   try {
-    const updatedCategoria = await Categoria.findByIdAndUpdate(
-      req.params.categoriaId,
-      req.body,
-      {
-        new: true,
-      }
+    const { nombre, descripcion } = req.body;
+
+    const categoria = await Categoria.findByIdAndUpdate(
+      req.params.id,
+      { nombre, descripcion },
+      { new: true }
     );
-    if (!updatedCategoria) {
-      return res.status(404).json({ message: 'Categoria not found' });
+
+    if (!categoria) {
+      return res.status(404).json({ message: "Categoría no encontrada" });
     }
-    res.status(200).json(updatedCategoria);
+
+    res.status(200).json(categoria);
   } catch (error) {
-    console.error('Error updating categoria by ID', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Error al actualizar la categoría", error: error.message });
   }
 };
 
-export const deleteCategoriaById = async (req, res) => {
+// 📌 Eliminar categoría
+export const deleteCategoria = async (req, res) => {
   try {
-    const { categoriaId } = req.params;
-
-    const deletedCategoria = await Categoria.findByIdAndDelete(categoriaId);
-    if (!deletedCategoria) {
-      return res.status(404).json({ message: 'Categoria not found' });
+    const categoria = await Categoria.findByIdAndDelete(req.params.id);
+    if (!categoria) {
+      return res.status(404).json({ message: "Categoría no encontrada" });
     }
-
-    res.status(204).json();
+    res.status(200).json({ message: "Categoría eliminada correctamente" });
   } catch (error) {
-    console.error('Error deleting categoria by ID', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-};
-
-export const createCategoria = async (req, res) => {
-  const { categoria, descripcion, estado } = req.body;
-
-  // Verificar si la categoría ya existe
-  try {
-    const categoriaExistente = await Categoria.findOne({ categoria });
-
-    if (categoriaExistente) {
-      // Si la categoría ya existe, enviar un mensaje de error
-      return res.status(400).json({ message: 'La categoría ya existe.' });
-    }
-
-    // Si la categoría no existe, crear una nueva
-    const newCategoria = new Categoria({
-      categoria,
-      descripcion,
-      estado
-    });
-
-    const categoriaSaved = await newCategoria.save();
-
-    res.status(201).json(categoriaSaved);
-  } catch (error) {
-    // Manejar errores durante la consulta o al intentar guardar la categoría
-    console.log(error);
-    return res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error al eliminar la categoría", error: error.message });
   }
 };

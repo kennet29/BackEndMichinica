@@ -1,31 +1,66 @@
-import { Router } from "express";
-import {
-  getAllEstilos,
-  createNewEstilo,
-  getEstiloById,
-  deleteEstiloById,
-  getTotalEstilos,
-  updateEstiloById
-} from "../controllers/estilos.controller.js";
-import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
+import Estilo from "../models/Estilo.js";
 
-const router = Router();
+export const createEstilo = async (req, res) => {
+  try {
+    const { estilo, descripcion, estado } = req.body;
 
+    const nuevoEstilo = new Estilo({ estilo, descripcion, estado });
+    await nuevoEstilo.save();
 
-router.get("/", getAllEstilos);
+    res.status(201).json(nuevoEstilo);
+  } catch (error) {
+    res.status(500).json({ message: "Error al crear estilo", error });
+  }
+};
 
+export const getEstilos = async (req, res) => {
+  try {
+    const estilos = await Estilo.find().sort({ idNumerico: 1 });
+    res.json(estilos);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener estilos", error });
+  }
+};
 
-router.post("/",[verifyToken,isModerator],  createNewEstilo);
+export const getEstiloById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const estilo = await Estilo.findOne({ idNumerico: id });
 
+    if (!estilo) return res.status(404).json({ message: "Estilo no encontrado" });
 
-router.get("/:id", getEstiloById);
+    res.json(estilo);
+  } catch (error) {
+    res.status(500).json({ message: "Error al buscar estilo", error });
+  }
+};
 
-router.delete("/:id",[verifyToken,isModerator],  deleteEstiloById);
+export const updateEstilo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = req.body;
 
+    const estilo = await Estilo.findOneAndUpdate({ idNumerico: id }, data, {
+      new: true,
+    });
 
-router.get("/total", getTotalEstilos);
+    if (!estilo) return res.status(404).json({ message: "Estilo no encontrado" });
 
+    res.json(estilo);
+  } catch (error) {
+    res.status(500).json({ message: "Error al actualizar estilo", error });
+  }
+};
 
-router.put("/:id",[verifyToken,isModerator],  updateEstiloById);
+export const deleteEstilo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const estilo = await Estilo.findOneAndDelete({ idNumerico: id });
 
-export default router;
+    if (!estilo) return res.status(404).json({ message: "Estilo no encontrado" });
+
+    res.json({ message: "Estilo eliminado correctamente" });
+  } catch (error) {
+    res.status(500).json({ message: "Error al eliminar estilo", error });
+  }
+};

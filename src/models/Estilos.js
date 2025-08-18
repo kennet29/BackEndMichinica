@@ -1,27 +1,20 @@
 import mongoose from "mongoose";
+const { Schema, model } = mongoose;
 
-const estiloSchema = new mongoose.Schema(
-  {
-   
-    estilo: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    descripcion: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    estado: {
-      type: Boolean,
-      required: true,
-    },
-  },
-  {
-    timestamps: true,
-    versionKey: false,
+const EstiloSchema = new Schema({
+  idNumerico: { type: Number, unique: true },
+  estilo: { type: String, required: true },
+  descripcion:{type: String, required: true},
+  estado:{type:Boolean, required: true}
+}, { timestamps: true });
+
+EstiloSchema.pre("save", async function(next) {
+  if (!this.idNumerico) {
+    const max = await this.constructor.findOne().sort({ idNumerico: -1 }).select("idNumerico");
+    this.idNumerico = max ? max.idNumerico + 1 : 1;
   }
-);
+  next();
+});
 
-export default mongoose.model("Estilo", estiloSchema);
+const Estilo = model("Estilo", EstiloSchema);
+export default Estilo;

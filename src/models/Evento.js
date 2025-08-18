@@ -1,14 +1,15 @@
 import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
-const ColorSchema = new Schema({
+const EventoSchema = new Schema({
   idNumerico: { type: Number, unique: true },
   nombre: { type: String, required: true },
-  descripcion:{ type: String,required: true},
-  estado:{type :Boolean , required : true }
-}, { timestamps: true });
+  descripcion: { type: String },
+  fecha: { type: Date, required: true },
+  usuariosInscritos: [{ type: Schema.Types.ObjectId, ref: "Usuario" }]
+});
 
-ColorSchema.pre("save", async function(next) {
+EventoSchema.pre("save", async function(next) {
   if (!this.idNumerico) {
     const max = await this.constructor.findOne().sort({ idNumerico: -1 }).select("idNumerico");
     this.idNumerico = max ? max.idNumerico + 1 : 1;
@@ -16,5 +17,5 @@ ColorSchema.pre("save", async function(next) {
   next();
 });
 
-const Color = model("Color", ColorSchema);
-export default Color;
+const Evento = model("Evento", EventoSchema);
+export default Evento;
