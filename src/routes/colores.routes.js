@@ -1,22 +1,13 @@
 import { Router } from "express";
-import {
-  crearColor,
-  mostrarColores,
-  editarColor,
-  eliminarColor,
-  obtenerColorPorId
- 
-} from "../controllers/colores.controller.js";
-
+import { createColor, getColores, getColorById, updateColor, deleteColor } from "../controllers/color.controller.js";
 import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
+
 const router = Router();
 
-
-router.get("/", mostrarColores);
-router.get("/:id", obtenerColorPorId);
-router.post("/",[verifyToken,isAdmin],  crearColor);
-router.put("/:id",[verifyToken,isModerator],  editarColor);
-router.delete("/:id",[verifyToken,isAdmin],  eliminarColor);
-
+router.get("/", getColores);
+router.get("/:id", getColorById);
+router.post("/", [verifyToken, isModerator], createColor);
+router.put("/:id", [verifyToken, isModerator], updateColor);
+router.delete("/:id", [verifyToken, isAdmin], deleteColor);
 
 export default router;

@@ -1,63 +1,59 @@
-import Material from "../models/Materiales.js";
+import Material from "../models/Material.js";
+
+// Crear un nuevo material
+export const createMaterial = async (req, res) => {
+  try {
+    const material = new Material(req.body);
+    await material.save();
+    res.status(201).json(material);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// Obtener todos los materiales
 export const getMateriales = async (req, res) => {
   try {
-    res.render('materiales.ejs', {
-      cssPaths: ['/css/estilo-footer.css','/css/extras.css' ]
-    });
+    const materiales = await Material.find().sort({ idNumerico: 1 });
+    res.json(materiales);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).json({ error: error.message });
   }
 };
 
-export const getAllMateriales = async (req, res) => {
+// Obtener un material por idNumerico
+export const getMaterialById = async (req, res) => {
   try {
-    const materiales = await Material.find();
-    res.status(200).json(materiales);
+    const material = await Material.findOne({ idNumerico: req.params.id });
+    if (!material) return res.status(404).json({ error: "Material no encontrado" });
+    res.json(material);
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
-export const createNewMaterial = async (req, res) => {
-  const { material, descripcion, estado } = req.body;
-
-  // Verificar si el material ya existe
+// Actualizar un material
+export const updateMaterial = async (req, res) => {
   try {
-    const materialExistente = await Material.findOne({ material });
-
-    if (materialExistente) {
-      // Si el material ya existe, enviar un mensaje de error
-      return res.status(400).json({ message: 'El material ya existe.' });
-    }
-
-    // Si el material no existe, crear uno nuevo
-    const newMaterial = new Material({ material, descripcion, estado });
-    await newMaterial.save();
-
-    res.status(201).json(newMaterial);
+    const material = await Material.findOneAndUpdate(
+      { idNumerico: req.params.id },
+      req.body,
+      { new: true }
+    );
+    if (!material) return res.status(404).json({ error: "Material no encontrado" });
+    res.json(material);
   } catch (error) {
-    // Manejar errores durante la consulta o al intentar guardar el material
-    res.status(500).json({ message: error.message });
+    res.status(400).json({ error: error.message });
   }
 };
 
-export const deleteMaterialById = async (req, res) => {
-  const { id } = req.params;
-
-
-  await Material.findByIdAndRemove(id);
-  res.json({ message: "Material deleted successfully." });
-};
-
-export const updateMaterialById = async (req, res) => {
-  const { id } = req.params;
-  const { material, descripcion, estado } = req.body;
-
- 
-
-  const updatedMaterial = { material, descripcion, estado, _id: id };
-
-  await Material.findByIdAndUpdate(id, updatedMaterial, { new: true });
-
-  res.json(updatedMaterial);
+// Eliminar un material
+export const deleteMaterial = async (req, res) => {
+  try {
+    const material = await Material.findOneAndDelete({ idNumerico: req.params.id });
+    if (!material) return res.status(404).json({ error: "Material no encontrado" });
+    res.json({ message: "Material eliminado correctamente" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };

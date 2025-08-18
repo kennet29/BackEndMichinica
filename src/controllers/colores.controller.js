@@ -1,75 +1,59 @@
-import Color from "../models/Colores.js";
+import Color from "../models/Color.js";
 
-
-export const crearColor = async (req, res) => {
-  const { color, codigo, estado } = req.body;
-
-  // Verificar si el color ya existe
+// Crear un nuevo color
+export const createColor = async (req, res) => {
   try {
-    const colorExistente = await Color.findOne({ color });
-
-    if (colorExistente) {
-      // Si el color ya existe, enviar un mensaje de error
-      return res.status(400).json({ error: 'El color ya existe.' });
-    }
-
-    // Si el color no existe, crear uno nuevo
-    const nuevoColor = await Color.create({ color, codigo, estado });
-    res.status(201).json(nuevoColor);
+    const color = new Color(req.body);
+    await color.save();
+    res.status(201).json(color);
   } catch (error) {
-    // Manejar errores durante la consulta o al intentar guardar el color
-    console.error(error);
-    res.status(500).json({ error: 'No se pudo crear el color' });
+    res.status(400).json({ error: error.message });
   }
 };
 
-
-// Controlador para mostrar todos los colores
-export const mostrarColores = async (req, res) => {
+// Obtener todos los colores
+export const getColores = async (req, res) => {
   try {
     const colores = await Color.find();
-    res.status(200).json(colores);
+    res.json(colores);
   } catch (error) {
-    res.status(500).json({ error: "No se pudieron obtener los colores" });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Controlador para editar un color por su ID
-export const editarColor = async (req, res) => {
-  const { id } = req.params;
+// Obtener un color por idNumerico
+export const getColorById = async (req, res) => {
   try {
-    const colorActualizado = await Color.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
-    res.status(200).json(colorActualizado);
+    const color = await Color.findOne({ idNumerico: req.params.id });
+    if (!color) return res.status(404).json({ error: "Color no encontrado" });
+    res.json(color);
   } catch (error) {
-    res.status(500).json({ error: "No se pudo actualizar el color" });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Controlador para eliminar un color por su ID
-export const eliminarColor = async (req, res) => {
-  const { id } = req.params;
+// Actualizar un color
+export const updateColor = async (req, res) => {
   try {
-    await Color.findByIdAndRemove(id);
-    res.status(200).json({ message: "Color eliminado con éxito" });
+    const color = await Color.findOneAndUpdate(
+      { idNumerico: req.params.id },
+      req.body,
+      { new: true }
+    );
+    if (!color) return res.status(404).json({ error: "Color no encontrado" });
+    res.json(color);
   } catch (error) {
-    res.status(500).json({ error: "No se pudo eliminar el color" });
+    res.status(400).json({ error: error.message });
   }
 };
 
-// Controlador para obtener un color por su ID
-export const obtenerColorPorId = async (req, res) => {
-  const { id } = req.params;
+// Eliminar un color
+export const deleteColor = async (req, res) => {
   try {
-    const color = await Color.findById(id);
-    
-    if (!color) {
-      return res.status(404).json({ error: "Color no encontrado" });
-    }
-
-    res.status(200).json(color);
+    const color = await Color.findOneAndDelete({ idNumerico: req.params.id });
+    if (!color) return res.status(404).json({ error: "Color no encontrado" });
+    res.json({ message: "Color eliminado correctamente" });
   } catch (error) {
-    res.status(500).json({ error: "No se pudo obtener el color" });
+    res.status(500).json({ error: error.message });
   }
 };

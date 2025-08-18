@@ -1,12 +1,13 @@
 import { Router } from "express";
-import { getAllTallas, createNewTalla,  deleteTallaById, updateTallaById } from "../controllers/tallas.controller.js";
+import { crearTalla, obtenerTallas, obtenerTallaPorId, actualizarTalla, eliminarTalla } from "../controllers/talla.controller.js";
 import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 
 const router = Router();
 
-router.get("/", getAllTallas);
-router.post("/",[verifyToken,isModerator], createNewTalla);
-router.delete("/:id",[verifyToken,isAdmin], deleteTallaById);
-router.put("/:id",[verifyToken,isModerator], updateTallaById);
+router.get("/", obtenerTallas); // todos pueden ver
+router.get("/:id", obtenerTallaPorId); // todos pueden ver
+router.post("/", [verifyToken, isModerator], crearTalla); // solo moderadores
+router.put("/:id", [verifyToken, isModerator], actualizarTalla); // solo moderadores
+router.delete("/:id", [verifyToken, isAdmin], eliminarTalla); // solo admin
 
 export default router;
