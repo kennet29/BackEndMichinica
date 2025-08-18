@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createDiseno, getDisenos, getDisenoById, updateDiseno, deleteDiseno } from "../controllers/diseno.controller.js";
+import { createDiseno, getDisenos, getDisenoById, updateDiseno, deleteDiseno } from "../controllers/diseños.controller.js";
 import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 
 const router = Router();

@@ -1,6 +1,5 @@
-import Color from "../models/Color.js";
+import Color from "../models/Colores.js";
 
-// Crear un nuevo color
 export const createColor = async (req, res) => {
   try {
     const color = new Color(req.body);
@@ -11,7 +10,6 @@ export const createColor = async (req, res) => {
   }
 };
 
-// Obtener todos los colores
 export const getColores = async (req, res) => {
   try {
     const colores = await Color.find();
@@ -21,7 +19,6 @@ export const getColores = async (req, res) => {
   }
 };
 
-// Obtener un color por idNumerico
 export const getColorById = async (req, res) => {
   try {
     const color = await Color.findOne({ idNumerico: req.params.id });
@@ -32,7 +29,6 @@ export const getColorById = async (req, res) => {
   }
 };
 
-// Actualizar un color
 export const updateColor = async (req, res) => {
   try {
     const color = await Color.findOneAndUpdate(
@@ -47,7 +43,6 @@ export const updateColor = async (req, res) => {
   }
 };
 
-// Eliminar un color
 export const deleteColor = async (req, res) => {
   try {
     const color = await Color.findOneAndDelete({ idNumerico: req.params.id });

@@ -1,4 +1,4 @@
-import Talla from "../models/Talla.js";
+import Talla from "../models/Tallas.js";
 
 
 export const crearTalla = async (req, res) => {

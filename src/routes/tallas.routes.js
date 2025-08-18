@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { crearTalla, obtenerTallas, obtenerTallaPorId, actualizarTalla, eliminarTalla } from "../controllers/talla.controller.js";
+import { crearTalla, obtenerTallas, obtenerTallaPorId, actualizarTalla, eliminarTalla } from "../controllers/tallas.controller.js";
 import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 
 const router = Router();

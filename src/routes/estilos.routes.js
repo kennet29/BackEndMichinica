@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createEstilo, getEstilos, getEstiloById, updateEstilo, deleteEstilo } from "../controllers/estilo.controller.js";
+import { createEstilo, getEstilos, getEstiloById, updateEstilo, deleteEstilo } from "../controllers/estilos.controller.js";
 import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 
 const router = Router();

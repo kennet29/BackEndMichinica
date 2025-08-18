@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createColor, getColores, getColorById, updateColor, deleteColor } from "../controllers/color.controller.js";
+import { createColor, getColores, getColorById, updateColor, deleteColor } from "../controllers/colores.controller.js";
 import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 
 const router = Router();

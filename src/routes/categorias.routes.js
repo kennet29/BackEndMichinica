@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createCategoria, getCategorias, getCategoriaById, updateCategoria, deleteCategoria } from "../controllers/categoria.controller.js";
+import { createCategoria, getCategorias, getCategoriaById, updateCategoria, deleteCategoria } from "../controllers/categorias.controller.js";
 import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 
 const router = Router();

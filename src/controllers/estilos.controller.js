@@ -1,4 +1,4 @@
-import Estilo from "../models/Estilo.js";
+import Estilo from "../models/Estilos.js";
 
 // Crear un nuevo estilo
 export const createEstilo = async (req, res) => {
@@ -47,4 +47,13 @@ export const updateEstilo = async (req, res) => {
   }
 };
 
-// E
+// Eliminar un estilo
+export const deleteEstilo = async (req, res) => {
+  try {
+    const estilo = await Estilo.findOneAndDelete({ idNumerico: req.params.id });
+    if (!estilo) return res.status(404).json({ error: "Estilo no encontrado" });
+    res.json({ message: "Estilo eliminado correctamente" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

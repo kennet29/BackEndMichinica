@@ -1,14 +1,6 @@
 import Autor from "../models/Autor.js";
 
-export const getAutores = async (req, res) => {
-  try {
-    res.render("autores.ejs", {
-      cssPaths: ["/css/estilo-footer.css", "/css/extras.css"],
-    });
-  } catch (error) {
-    res.status(500).json({ error: "Error al renderizar la vista de autores" });
-  }
-};
+
 
 export const createNewAutor = async (req, res) => {
   try {

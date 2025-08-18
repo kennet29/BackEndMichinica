@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createMaterial, getMateriales, getMaterialById, updateMaterial, deleteMaterial } from "../controllers/material.controller.js";
+import { createMaterial, getMateriales, getMaterialById, updateMaterial, deleteMaterial } from "../controllers/materiales.controller.js";
 import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 
 const router = Router();
