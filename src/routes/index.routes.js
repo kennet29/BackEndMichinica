@@ -1,5 +1,9 @@
 import {Router} from 'express'
-import pkg from "../../package.json" assert {type: "json"};
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const pkg = require("../../package.json");
+
+
 
 const router = Router()
 import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
