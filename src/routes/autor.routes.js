@@ -1,24 +1,34 @@
 import { Router } from "express";
+import multer from "multer";
 import { 
-  createNewAutor, 
-  getAllAutores, 
-  updateAutorById, 
-  deleteAutorById 
-} from "../controllers/autor.controller.js";
+  createEvento, 
+  getEventos, 
+  getEventoById, 
+  updateEvento, 
+  deleteEvento, 
+  inscribirUsuario
+} from "../controllers/evento.controller.js";
 import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 
 const router = Router();
+const upload = multer(); // guarda archivos en memoria
 
-// Obtener todos los autores (cualquiera puede ver)
-router.get("/", getAllAutores);
+// Obtener todos los eventos
+router.get("/", getEventos);
 
-// Crear un nuevo autor (solo moderadores)
-router.post("/", [verifyToken, isModerator], createNewAutor);
+// Obtener un evento por ID
+router.get("/:id", getEventoById);
 
-// Actualizar un autor por ID (solo moderadores)
-router.put("/:id", [verifyToken, isModerator], updateAutorById);
+// Crear evento con imagen (solo moderador o admin)
+router.post("/", [verifyToken, isModerator], upload.single("imagen"), createEvento);
 
-// Eliminar un autor por ID (solo admin)
-router.delete("/:id", [verifyToken, isAdmin], deleteAutorById);
+// Actualizar evento con posibilidad de cambiar imagen
+router.put("/:id", [verifyToken, isModerator], upload.single("imagen"), updateEvento);
+
+// Eliminar evento (solo admin)
+router.delete("/:id", [verifyToken, isAdmin], deleteEvento);
+
+// Inscribir un usuario en un evento
+router.post("/:id/inscribir", [verifyToken], inscribirUsuario);
 
 export default router;

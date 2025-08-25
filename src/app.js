@@ -13,6 +13,7 @@ import authRoutes from "./routes/auth.routes.js";
 import CategoriaRoutes from "./routes/categorias.routes.js"
 import DiseñosRoutes from "./routes/diseños.routes.js"
 import EstilosRoutes from "./routes/estilos.routes.js"
+import EventosRouters from "./routes/evento.routes.js"
 
 
 
@@ -52,6 +53,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // Routes
 app.use("/api", indexRoutes);
+app.use("/api/eventos",EventosRouters);
 app.use("/api/colores",coloresRoutes);
 app.use("/api/categorias",CategoriaRoutes);
 app.use("/api/materiales",materialesRoutes)
