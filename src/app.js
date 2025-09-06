@@ -2,23 +2,9 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
-
-// Routes
 import indexRoutes from "./routes/index.routes.js";
-import coloresRoutes from "./routes/colores.routes.js"
-import materialesRoutes from "./routes/materiales.routes.js"
-import tallasRoutes from "./routes/tallas.routes.js"
 import usersRoutes from "./routes/user.routes.js";
 import authRoutes from "./routes/auth.routes.js";
-import CategoriaRoutes from "./routes/categorias.routes.js"
-import DiseñosRoutes from "./routes/diseños.routes.js"
-import EstilosRoutes from "./routes/estilos.routes.js"
-import EventosRouters from "./routes/evento.routes.js"
-
-
-
-
-
 
 const app = express();
 
@@ -53,21 +39,8 @@ app.use(express.urlencoded({ extended: false }));
 
 // Routes
 app.use("/api", indexRoutes);
-app.use("/api/eventos",EventosRouters);
-app.use("/api/colores",coloresRoutes);
-app.use("/api/categorias",CategoriaRoutes);
-app.use("/api/materiales",materialesRoutes)
-app.use("/api/tallas",tallasRoutes);
-app.use("/api/estilos",EstilosRoutes);
-app.use("/api/diseños",DiseñosRoutes)
 app.use("/api/user", usersRoutes);
 app.use("/api/auth", authRoutes);
-
-
-
-
-
-
 
 
 export default app;

@@ -1,4 +1,4 @@
-// controllers/adopcionController.js
+// controllers/adopcionController.js 
 import Adopcion from "../models/Adopcion.js";
 import Mascota from "../models/Mascota.js";
 
@@ -33,7 +33,7 @@ export const crearAdopcion = async (req, res) => {
 export const obtenerAdopciones = async (req, res) => {
   try {
     const adopciones = await Adopcion.find()
-      .populate("mascotaId", "nombre especie raza")
+      .populate("mascotaId", "nombre especie raza cumpleaños sexo")
       .populate("usuarioSolicitanteId", "username email")
       .populate("usuarioRefugioId", "username email");
 
@@ -47,7 +47,7 @@ export const obtenerAdopciones = async (req, res) => {
 export const obtenerAdopcionPorId = async (req, res) => {
   try {
     const adopcion = await Adopcion.findById(req.params.id)
-      .populate("mascotaId", "nombre especie raza")
+      .populate("mascotaId", "nombre especie raza cumpleaños sexo")
       .populate("usuarioSolicitanteId", "username email")
       .populate("usuarioRefugioId", "username email");
 
@@ -61,7 +61,7 @@ export const obtenerAdopcionPorId = async (req, res) => {
   }
 };
 
-// Actualizar estado de adopción (aprobada o rechazada)
+
 export const actualizarEstadoAdopcion = async (req, res) => {
   try {
     const { estado } = req.body;
@@ -77,12 +77,10 @@ export const actualizarEstadoAdopcion = async (req, res) => {
     adopcion.estado = estado;
     adopcion.fechaRespuesta = new Date();
 
-    // Si se aprueba, cambiar el estado de la mascota
     if (estado === "aprobada") {
       adopcion.mascotaId.estadoAdopcion = "adoptado";
       await adopcion.mascotaId.save();
     }
-
     await adopcion.save();
 
     res.status(200).json({ message: "Estado de adopción actualizado", adopcion });
