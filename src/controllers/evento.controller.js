@@ -1,139 +1,119 @@
+// controllers/eventoController.js
 import Evento from "../models/Evento.js";
-import mongoose from "mongoose";
 
-// Crear evento con imagen
-export const createEvento = async (req, res) => {
+// Crear un nuevo evento
+export const crearEvento = async (req, res) => {
   try {
-    const nuevoEvento = new Evento({
-      nombre: req.body.nombre,
-      descripcion: req.body.descripcion,
-      fecha: req.body.fecha,
-      usuariosInscritos: req.body.usuariosInscritos || [],
-      imagen: req.file
-        ? {
-            data: req.file.buffer,
-            contentType: req.file.mimetype
-          }
-        : undefined
-    });
-
-    await nuevoEvento.save();
-
-    // Convertir imagen a base64 antes de enviar al frontend
-    let imagenBase64 = null;
-    if (nuevoEvento.imagen && nuevoEvento.imagen.data) {
-      imagenBase64 = Buffer.from(nuevoEvento.imagen.data).toString("base64");
-    }
-
-    res.status(201).json({ ...nuevoEvento.toObject(), imagenBase64 });
+    const evento = new Evento(req.body);
+    await evento.save();
+    res.status(201).json({ message: "Evento creado con éxito", evento });
   } catch (error) {
-    console.error("Error creando evento:", error);
-    res.status(500).json({ error: error.message || "Error al crear evento" });
+    res.status(400).json({ message: "Error al crear evento", error: error.message });
   }
 };
 
 // Obtener todos los eventos
-export const getEventos = async (req, res) => {
+export const obtenerEventos = async (req, res) => {
   try {
-    const eventos = await Evento.find().populate("usuariosInscritos");
+    const eventos = await Evento.find()
+      .populate("organizadorId", "username email")
+      .populate("participantes", "username email");
 
-    // Convertir imágenes a base64
-    const eventosConImagenBase64 = eventos.map(evento => {
-      let imagenBase64 = null;
-      if (evento.imagen && evento.imagen.data) {
-        imagenBase64 = Buffer.from(evento.imagen.data).toString("base64");
-      }
-      return {
-        ...evento.toObject(),
-        imagenBase64,
-        usuariosInscritos: evento.usuariosInscritos || []
-      };
-    });
-
-    res.status(200).json(eventosConImagenBase64);
+    res.status(200).json(eventos);
   } catch (error) {
-    console.error("Error obteniendo eventos:", error);
-    res.status(500).json({ error: error.message, stack: error.stack });
+    res.status(500).json({ message: "Error al obtener eventos", error: error.message });
   }
 };
 
 // Obtener un evento por ID
-export const getEventoById = async (req, res) => {
+export const obtenerEventoPorId = async (req, res) => {
   try {
-    const evento = await Evento.findById(req.params.id).populate("usuariosInscritos");
-    if (!evento) return res.status(404).json({ message: "Evento no encontrado" });
+    const evento = await Evento.findById(req.params.id)
+      .populate("organizadorId", "username email")
+      .populate("participantes", "username email");
 
-    let imagenBase64 = null;
-    if (evento.imagen && evento.imagen.data) {
-      imagenBase64 = Buffer.from(evento.imagen.data).toString("base64");
+    if (!evento) {
+      return res.status(404).json({ message: "Evento no encontrado" });
     }
 
-    res.status(200).json({ ...evento.toObject(), imagenBase64, usuariosInscritos: evento.usuariosInscritos || [] });
+    res.status(200).json(evento);
   } catch (error) {
-    console.error("Error obteniendo evento:", error);
-    res.status(500).json({ error: error.message || "Error al obtener evento" });
+    res.status(500).json({ message: "Error al obtener evento", error: error.message });
   }
 };
 
-// Actualizar evento (con posibilidad de nueva imagen)
-export const updateEvento = async (req, res) => {
+// Actualizar un evento
+export const actualizarEvento = async (req, res) => {
   try {
-    const updateData = { ...req.body };
+    const evento = await Evento.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
-    if (req.file) {
-      updateData.imagen = {
-        data: req.file.buffer,
-        contentType: req.file.mimetype
-      };
+    if (!evento) {
+      return res.status(404).json({ message: "Evento no encontrado" });
     }
 
-    const evento = await Evento.findByIdAndUpdate(req.params.id, updateData, { new: true }).populate("usuariosInscritos");
-    if (!evento) return res.status(404).json({ message: "Evento no encontrado" });
-
-    let imagenBase64 = null;
-    if (evento.imagen && evento.imagen.data) {
-      imagenBase64 = Buffer.from(evento.imagen.data).toString("base64");
-    }
-
-    res.status(200).json({ ...evento.toObject(), imagenBase64, usuariosInscritos: evento.usuariosInscritos || [] });
+    res.status(200).json({ message: "Evento actualizado con éxito", evento });
   } catch (error) {
-    console.error("Error actualizando evento:", error);
-    res.status(500).json({ error: error.message || "Error al actualizar evento" });
+    res.status(400).json({ message: "Error al actualizar evento", error: error.message });
   }
 };
 
-// Eliminar evento
-export const deleteEvento = async (req, res) => {
+// Eliminar un evento
+export const eliminarEvento = async (req, res) => {
   try {
     const evento = await Evento.findByIdAndDelete(req.params.id);
-    if (!evento) return res.status(404).json({ message: "Evento no encontrado" });
-    res.status(200).json({ message: "Evento eliminado correctamente" });
+    if (!evento) {
+      return res.status(404).json({ message: "Evento no encontrado" });
+    }
+
+    res.status(200).json({ message: "Evento eliminado con éxito" });
   } catch (error) {
-    console.error("Error eliminando evento:", error);
-    res.status(500).json({ error: error.message || "Error al eliminar evento" });
+    res.status(500).json({ message: "Error al eliminar evento", error: error.message });
   }
 };
 
-// Inscribir usuario en un evento
-export const inscribirUsuario = async (req, res) => {
+// Unirse a un evento
+export const unirseEvento = async (req, res) => {
   try {
     const { usuarioId } = req.body;
-    const evento = await Evento.findByIdAndUpdate(
-      req.params.id,
-      { $addToSet: { usuariosInscritos: usuarioId } }, 
-      { new: true }
-    ).populate("usuariosInscritos");
 
-    if (!evento) return res.status(404).json({ message: "Evento no encontrado" });
-
-    let imagenBase64 = null;
-    if (evento.imagen && evento.imagen.data) {
-      imagenBase64 = Buffer.from(evento.imagen.data).toString("base64");
+    const evento = await Evento.findById(req.params.id);
+    if (!evento) {
+      return res.status(404).json({ message: "Evento no encontrado" });
     }
 
-    res.status(200).json({ ...evento.toObject(), imagenBase64, usuariosInscritos: evento.usuariosInscritos || [] });
+    if (evento.participantes.includes(usuarioId)) {
+      return res.status(400).json({ message: "El usuario ya está inscrito en este evento" });
+    }
+
+    evento.participantes.push(usuarioId);
+    await evento.save();
+
+    res.status(200).json({ message: "Usuario agregado al evento", evento });
   } catch (error) {
-    console.error("Error inscribiendo usuario:", error);
-    res.status(500).json({ error: error.message || "Error al inscribir usuario" });
+    res.status(400).json({ message: "Error al unirse al evento", error: error.message });
+  }
+};
+
+// Salir de un evento
+export const salirEvento = async (req, res) => {
+  try {
+    const { usuarioId } = req.body;
+
+    const evento = await Evento.findById(req.params.id);
+    if (!evento) {
+      return res.status(404).json({ message: "Evento no encontrado" });
+    }
+
+    evento.participantes = evento.participantes.filter(
+      (id) => id.toString() !== usuarioId
+    );
+    await evento.save();
+
+    res.status(200).json({ message: "Usuario eliminado del evento", evento });
+  } catch (error) {
+    res.status(400).json({ message: "Error al salir del evento", error: error.message });
   }
 };

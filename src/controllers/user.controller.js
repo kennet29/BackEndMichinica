@@ -7,8 +7,6 @@ export const createUser = async (req, res) => {
     const { username, email, password, roles } = req.body;
 
     const rolesFound = await Role.find({ name: { $in: roles } });
-
-    // creating a new User
     const user = new User({
       username,
       email,
@@ -16,10 +14,9 @@ export const createUser = async (req, res) => {
       roles: rolesFound.map((role) => role._id),
     });
 
-    // encrypting password
+
     user.password = await User.encryptPassword(user.password);
 
-    // saving the new user
     const savedUser = await user.save();
 
     return res.status(200).json({
@@ -45,9 +42,8 @@ export const getUser = async (req, res) => {
 
 export const getUserNames = async (req, res) => {
   try {
-    const users = await User.find({}, '_id username roles') // Include 'roles' field in the query
-                               .populate('roles', '_id name'); // Populate the 'roles' field and select '_id' and 'name'
-
+    const users = await User.find({}, '_id username roles') 
+    .populate('roles', '_id name'); 
     const formattedUsers = users.map(user => ({
       _id: user._id,
       username: user.username,
@@ -56,7 +52,6 @@ export const getUserNames = async (req, res) => {
         name: role.name
       }))
     }));
-
     return res.status(200).json(formattedUsers);
   } catch (error) {
     console.error('Error al obtener los nombres de usuario:', error);
@@ -67,10 +62,7 @@ export const getUserNames = async (req, res) => {
 export const  getRoleNameById = async (req, res) => {
     try {
       const roleId = req.params.id; 
-      
-
       const role = await Role.findById(roleId);
-
       if (!role) {
         return res.status(404).json({ message: 'Rol no encontrado' });
       }
@@ -81,19 +73,16 @@ export const  getRoleNameById = async (req, res) => {
     }
   };
 
- // Importaciones necesarias, como Role y User models
 
  export const updateUser = async (req, res) => {
   try {
     const userId = req.params.userId;
     const { username, email, password, roles } = req.body;
 
-    // Verificar si se proporcionaron roles y encontrar sus IDs
     let rolesToUpdate = [];
     if (roles && roles.length > 0) {
       const rolesFound = await Role.find({ _id: { $in: roles } });
 
-      // Verificar si se encontraron todos los roles proporcionados
       if (rolesFound.length !== roles.length) {
         return res.status(404).json({ message: 'Uno o más roles no encontrados' });
       }
@@ -105,19 +94,15 @@ export const  getRoleNameById = async (req, res) => {
     const updatedUser = {
       username,
       email,
-
       password: password ? await User.encryptPassword(password) : undefined,
     };
-
 
     if (rolesToUpdate.length > 0) {
       updatedUser.roles = rolesToUpdate;
     }
 
-
     delete updatedUser._id;
 
-   
     const result = await User.findByIdAndUpdate(userId, updatedUser, { new: true });
 
    
@@ -141,20 +126,17 @@ export const getUserRolesById = async (req, res) => {
   try {
     const userId = req.params.userId;
 
-    // Verificar si el ID del usuario es válido
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: 'ID de usuario no válido' });
     }
 
-    // Buscar el usuario por su ID y seleccionar el campo 'roles'
     const user = await User.findById(userId, 'roles').populate('roles', 'name');
 
-    // Verificar si el usuario existe
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    // Obtener los roles del usuario en un formato adecuado
+
     const userRoles = user.roles.map(role => ({
       _id: role._id,
       name: role.name,
