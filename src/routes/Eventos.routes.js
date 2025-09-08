@@ -8,7 +8,7 @@ import {
   eliminarEvento,
   unirseEvento,
   salirEvento,
-} from "../controllers/eventoController.js";
+} from "../controllers/Evento.controller.js";
 
 const router = express.Router();
 

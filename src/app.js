@@ -8,10 +8,11 @@ import authRoutes from "./routes/auth.routes.js";
 
 import MascotasRoutes from "./routes/Mascota.routes.js"
 import MascotaperdidasRoutes from "./routes/MascotaPerdida.routes.js"
-
+import AdopcionRoutes from "./routes/Adopcion.routes.js";
+import EventoRoutes from "./routes/Eventos.routes.js"
+import PublicacionRoutes from "./routes/publicacion.routes.js"
 
 const app = express();
-
 // Settings
 app.set("port", process.env.PORT || 4000);
 app.set('view engine','ejs');
@@ -39,14 +40,15 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-
 // Routes
 app.use("/api", indexRoutes);
 app.use("/api/user", usersRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/mascotas",MascotasRoutes);
 app.use("/api/mascotasPerdidas",MascotaperdidasRoutes);
+app.use("/api/adopciones",AdopcionRoutes);
+app.use("/api/publicaciones",PublicacionRoutes);
+app.use("/api/eventos",EventoRoutes);
 
 
 export default app;

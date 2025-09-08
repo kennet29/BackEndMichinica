@@ -6,7 +6,7 @@ import {
   obtenerAdopcionPorId,
   actualizarEstadoAdopcion,
   eliminarAdopcion,
-} from "../controllers/adopcionController.js";
+} from "../controllers/Adopcion.controller.js";
 
 const router = express.Router();
 
