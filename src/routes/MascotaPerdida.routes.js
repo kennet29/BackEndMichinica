@@ -5,7 +5,7 @@ import {
   obtenerMascotaPerdidaPorId,
   actualizarMascotaPerdida,
   eliminarMascotaPerdida,
-} from "../controllers/mascotaPerdidaController.js";
+} from "../controllers/MacotaPerdida.controller.js";
 
 const router = express.Router();
 

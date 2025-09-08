@@ -6,6 +6,10 @@ import indexRoutes from "./routes/index.routes.js";
 import usersRoutes from "./routes/user.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 
+import MascotasRoutes from "./routes/Mascota.routes.js"
+import MascotaperdidasRoutes from "./routes/MascotaPerdida.routes.js"
+
+
 const app = express();
 
 // Settings
@@ -41,6 +45,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/api", indexRoutes);
 app.use("/api/user", usersRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/mascotas",MascotasRoutes);
+app.use("/api/mascotasPerdidas",MascotaperdidasRoutes);
 
 
 export default app;

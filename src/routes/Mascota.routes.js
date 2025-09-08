@@ -6,7 +6,7 @@ import {
   obtenerMascotaPorId,
   actualizarMascota,
   eliminarMascota,
-} from "../controllers/mascotaController.js";
+} from "../controllers/Mascota.controller.js";
 
 const router = express.Router();
 
