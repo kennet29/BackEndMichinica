@@ -1,9 +1,33 @@
 // controllers/eventoController.js
 import Evento from "../models/Evento.js";
+import mongoose from "mongoose";
 
 // Crear un nuevo evento
 export const crearEvento = async (req, res) => {
   try {
+    const { titulo, descripcion, fecha, ubicacion, organizadorId } = req.body;
+
+    // Validaciones básicas
+    if (!titulo || titulo.length < 3) {
+      return res.status(400).json({ message: "El título es obligatorio y debe tener al menos 3 caracteres" });
+    }
+
+    if (!descripcion || descripcion.length < 10) {
+      return res.status(400).json({ message: "La descripción es obligatoria y debe tener al menos 10 caracteres" });
+    }
+
+    if (!fecha || isNaN(Date.parse(fecha))) {
+      return res.status(400).json({ message: "La fecha es obligatoria y debe tener un formato válido" });
+    }
+
+    if (!ubicacion) {
+      return res.status(400).json({ message: "La ubicación es obligatoria" });
+    }
+
+    if (!organizadorId || !mongoose.Types.ObjectId.isValid(organizadorId)) {
+      return res.status(400).json({ message: "El organizadorId es obligatorio y debe ser válido" });
+    }
+
     const evento = new Evento(req.body);
     await evento.save();
     res.status(201).json({ message: "Evento creado con éxito", evento });
@@ -12,39 +36,24 @@ export const crearEvento = async (req, res) => {
   }
 };
 
-// Obtener todos los eventos
-export const obtenerEventos = async (req, res) => {
-  try {
-    const eventos = await Evento.find()
-      .populate("organizadorId", "username email")
-      .populate("participantes", "username email");
-
-    res.status(200).json(eventos);
-  } catch (error) {
-    res.status(500).json({ message: "Error al obtener eventos", error: error.message });
-  }
-};
-
-// Obtener un evento por ID
-export const obtenerEventoPorId = async (req, res) => {
-  try {
-    const evento = await Evento.findById(req.params.id)
-      .populate("organizadorId", "username email")
-      .populate("participantes", "username email");
-
-    if (!evento) {
-      return res.status(404).json({ message: "Evento no encontrado" });
-    }
-
-    res.status(200).json(evento);
-  } catch (error) {
-    res.status(500).json({ message: "Error al obtener evento", error: error.message });
-  }
-};
-
 // Actualizar un evento
 export const actualizarEvento = async (req, res) => {
   try {
+    const { titulo, descripcion, fecha, ubicacion } = req.body;
+
+    // Validaciones si se actualizan campos
+    if (titulo && titulo.length < 3) {
+      return res.status(400).json({ message: "El título debe tener al menos 3 caracteres" });
+    }
+
+    if (descripcion && descripcion.length < 10) {
+      return res.status(400).json({ message: "La descripción debe tener al menos 10 caracteres" });
+    }
+
+    if (fecha && isNaN(Date.parse(fecha))) {
+      return res.status(400).json({ message: "La fecha debe tener un formato válido" });
+    }
+
     const evento = await Evento.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
@@ -60,24 +69,14 @@ export const actualizarEvento = async (req, res) => {
   }
 };
 
-// Eliminar un evento
-export const eliminarEvento = async (req, res) => {
-  try {
-    const evento = await Evento.findByIdAndDelete(req.params.id);
-    if (!evento) {
-      return res.status(404).json({ message: "Evento no encontrado" });
-    }
-
-    res.status(200).json({ message: "Evento eliminado con éxito" });
-  } catch (error) {
-    res.status(500).json({ message: "Error al eliminar evento", error: error.message });
-  }
-};
-
 // Unirse a un evento
 export const unirseEvento = async (req, res) => {
   try {
     const { usuarioId } = req.body;
+
+    if (!usuarioId || !mongoose.Types.ObjectId.isValid(usuarioId)) {
+      return res.status(400).json({ message: "El usuarioId es obligatorio y debe ser válido" });
+    }
 
     const evento = await Evento.findById(req.params.id);
     if (!evento) {
@@ -101,6 +100,10 @@ export const unirseEvento = async (req, res) => {
 export const salirEvento = async (req, res) => {
   try {
     const { usuarioId } = req.body;
+
+    if (!usuarioId || !mongoose.Types.ObjectId.isValid(usuarioId)) {
+      return res.status(400).json({ message: "El usuarioId es obligatorio y debe ser válido" });
+    }
 
     const evento = await Evento.findById(req.params.id);
     if (!evento) {

@@ -1,30 +1,59 @@
+import mongoose from "mongoose";
 import Visita from "../models/Visita.js";
 
-// Crear visita
+// 📌 Crear visita
 export const crearVisita = async (req, res) => {
   try {
-    const visita = new Visita(req.body);
+    const { motivo, fecha, mascotaId } = req.body;
+
+    if (!motivo?.trim() || !fecha || !mascotaId) {
+      return res.status(400).json({
+        message: "El motivo, la fecha y la mascotaId son obligatorios",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(mascotaId)) {
+      return res.status(400).json({ message: "ID de mascota no válido" });
+    }
+
+    if (isNaN(Date.parse(fecha))) {
+      return res.status(400).json({ message: "Fecha no válida" });
+    }
+
+    const visita = new Visita({ motivo: motivo.trim(), fecha, mascotaId });
     await visita.save();
-    res.status(201).json(visita);
+    res.status(201).json({ message: "Visita creada con éxito", visita });
   } catch (error) {
     res.status(400).json({ message: "Error al crear visita", error: error.message });
   }
 };
 
-// Obtener todas las visitas de una mascota
+// 📌 Obtener todas las visitas de una mascota
 export const obtenerVisitas = async (req, res) => {
   try {
-    const visitas = await Visita.find({ mascotaId: req.params.mascotaId });
+    const { mascotaId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(mascotaId)) {
+      return res.status(400).json({ message: "ID de mascota no válido" });
+    }
+
+    const visitas = await Visita.find({ mascotaId });
     res.status(200).json(visitas);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener visitas", error: error.message });
   }
 };
 
-// Obtener visita por ID
+// 📌 Obtener visita por ID
 export const obtenerVisitaPorId = async (req, res) => {
   try {
-    const visita = await Visita.findById(req.params.id);
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID de visita no válido" });
+    }
+
+    const visita = await Visita.findById(id);
     if (!visita) return res.status(404).json({ message: "Visita no encontrada" });
     res.status(200).json(visita);
   } catch (error) {
@@ -32,23 +61,51 @@ export const obtenerVisitaPorId = async (req, res) => {
   }
 };
 
-// Actualizar visita
+// 📌 Actualizar visita
 export const actualizarVisita = async (req, res) => {
   try {
-    const visita = await Visita.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { id } = req.params;
+    const { motivo, fecha } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID de visita no válido" });
+    }
+
+    if (!motivo?.trim() && !fecha) {
+      return res.status(400).json({
+        message: "Debes proporcionar al menos un campo para actualizar (motivo o fecha)",
+      });
+    }
+
+    if (fecha && isNaN(Date.parse(fecha))) {
+      return res.status(400).json({ message: "Fecha no válida" });
+    }
+
+    const visita = await Visita.findByIdAndUpdate(
+      id,
+      { ...(motivo ? { motivo: motivo.trim() } : {}), ...(fecha ? { fecha } : {}) },
+      { new: true, runValidators: true }
+    );
+
     if (!visita) return res.status(404).json({ message: "Visita no encontrada" });
-    res.status(200).json(visita);
+    res.status(200).json({ message: "Visita actualizada con éxito", visita });
   } catch (error) {
     res.status(400).json({ message: "Error al actualizar visita", error: error.message });
   }
 };
 
-// Eliminar visita
+// 📌 Eliminar visita
 export const eliminarVisita = async (req, res) => {
   try {
-    const visita = await Visita.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID de visita no válido" });
+    }
+
+    const visita = await Visita.findByIdAndDelete(id);
     if (!visita) return res.status(404).json({ message: "Visita no encontrada" });
-    res.status(200).json({ message: "Visita eliminada" });
+    res.status(200).json({ message: "Visita eliminada con éxito" });
   } catch (error) {
     res.status(500).json({ message: "Error al eliminar visita", error: error.message });
   }

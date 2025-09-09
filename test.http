@@ -1,7 +1,55 @@
-curl -X POST http://localhost:3000/api/eventos \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombre": "Conferencia Blockchain",
-    "descripcion": "Evento sobre introducción a la tecnología blockchain",
-    "fecha": "2025-09-10T14:00:00Z"
-  }'
+
+POST http://localhost:4000/auth/signup
+Content-Type: application/json
+
+{
+  "username": "kenneth01",
+  "email": "kenneth02@example.com",
+  "password": "123456",
+  "roles": ["admin"]   
+}
+
+### 📌 Crear usuario con email inválido (debe dar error 400)
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+  "username": "testUser",
+  "email": "correo_invalido",
+  "password": "123456"
+}
+
+### 📌 Obtener todos los usuarios
+GET http://localhost:3000/api/users
+
+### 📌 Obtener un usuario por ID (reemplaza {{userId}})
+GET http://localhost:3000/api/users/{{userId}}
+
+### 📌 Obtener usuarios (solo id, username y roles)
+GET http://localhost:3000/api/users/names
+
+### 📌 Obtener nombre de rol por ID (reemplaza {{roleId}})
+GET http://localhost:3000/api/users/role/{{roleId}}
+
+### 📌 Actualizar usuario (reemplaza {{userId}})
+PUT http://localhost:3000/api/users/{{userId}}
+Content-Type: application/json
+
+{
+  "username": "nuevoUsername",
+  "email": "nuevoemail@example.com",
+  "password": "nuevaPassword",
+  "roles": ["{{roleId}}"] 
+}
+
+### 📌 Actualizar usuario sin roles (solo cambiar username y email)
+PUT http://localhost:3000/api/users/{{userId}}
+Content-Type: application/json
+
+{
+  "username": "actualizadoSinRoles",
+  "email": "update@example.com"
+}
+
+### 📌 Obtener roles de un usuario por ID (reemplaza {{userId}})
+GET http://localhost:3000/api/users/{{userId}}/roles

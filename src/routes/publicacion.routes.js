@@ -14,10 +14,7 @@ router.post("/", crearPublicacion);
 router.get("/", obtenerPublicaciones);
 router.get("/:id", obtenerPublicacionPorId);
 router.delete("/:id", eliminarPublicacion);
-
 router.post("/:id/like", toggleLike);
-
-
 router.post("/:id/comentarios", agregarComentario);
 router.delete("/:id/comentarios/:comentarioId", eliminarComentario);
 

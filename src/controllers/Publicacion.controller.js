@@ -1,13 +1,40 @@
 import Publicacion from "../models/Publicacion.js";
 
+// 🔹 Lista básica de insultos (puedes ampliarla según necesites)
+const palabrasProhibidas = [
+  "idiota",
+  "tonto",
+  "estúpido",
+  "imbécil",
+  "pendejo",
+  "mierda",
+  "puta",
+  "maldito",
+];
+
+// 🔹 Función para censurar insultos
+const censurarTexto = (texto) => {
+  let resultado = texto;
+  palabrasProhibidas.forEach((palabra) => {
+    const regex = new RegExp(`\\b${palabra}\\b`, "gi");
+    resultado = resultado.replace(regex, "****");
+  });
+  return resultado;
+};
+
 // 📌 Crear una nueva publicación
 export const crearPublicacion = async (req, res) => {
   try {
+    // Censurar el contenido antes de guardar
+    if (req.body.contenido) {
+      req.body.contenido = censurarTexto(req.body.contenido);
+    }
+
     const publicacion = new Publicacion(req.body);
     await publicacion.save();
     res.status(201).json(publicacion);
   } catch (error) {
-    res.status(400).json({ message: "Error al crear publicación", error });
+    res.status(400).json({ message: "Error al crear publicación", error: error.message });
   }
 };
 
@@ -17,10 +44,11 @@ export const obtenerPublicaciones = async (req, res) => {
     const publicaciones = await Publicacion.find()
       .populate("usuarioId", "username email")
       .populate("comentarios.usuarioId", "username email")
-      .sort({ fecha: -1 }); // más recientes primero
+      .sort({ fecha: -1 });
+
     res.json(publicaciones);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener publicaciones", error });
+    res.status(500).json({ message: "Error al obtener publicaciones", error: error.message });
   }
 };
 
@@ -30,10 +58,12 @@ export const obtenerPublicacionPorId = async (req, res) => {
     const publicacion = await Publicacion.findById(req.params.id)
       .populate("usuarioId", "username email")
       .populate("comentarios.usuarioId", "username email");
+
     if (!publicacion) return res.status(404).json({ message: "Publicación no encontrada" });
+
     res.json(publicacion);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener la publicación", error });
+    res.status(500).json({ message: "Error al obtener la publicación", error: error.message });
   }
 };
 
@@ -44,7 +74,7 @@ export const eliminarPublicacion = async (req, res) => {
     if (!publicacion) return res.status(404).json({ message: "Publicación no encontrada" });
     res.json({ message: "Publicación eliminada correctamente" });
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar la publicación", error });
+    res.status(500).json({ message: "Error al eliminar la publicación", error: error.message });
   }
 };
 
@@ -58,36 +88,37 @@ export const toggleLike = async (req, res) => {
     const index = publicacion.likes.indexOf(userId);
 
     if (index === -1) {
-      // Si no ha dado like, agregar
       publicacion.likes.push(userId);
     } else {
-      // Si ya dio like, quitar
       publicacion.likes.splice(index, 1);
     }
 
     await publicacion.save();
     res.json(publicacion);
   } catch (error) {
-    res.status(500).json({ message: "Error al dar/quitar like", error });
+    res.status(500).json({ message: "Error al dar/quitar like", error: error.message });
   }
 };
 
-// 📌 Agregar un comentario
+// 📌 Agregar un comentario (con censura)
 export const agregarComentario = async (req, res) => {
   try {
     const { usuarioId, comentario } = req.body;
     const publicacion = await Publicacion.findById(req.params.id);
+
     if (!publicacion) return res.status(404).json({ message: "Publicación no encontrada" });
 
-    publicacion.comentarios.push({ usuarioId, comentario });
+    // Censurar insultos en el comentario
+    const comentarioCensurado = censurarTexto(comentario);
+
+    publicacion.comentarios.push({ usuarioId, comentario: comentarioCensurado });
     await publicacion.save();
 
-    // Para devolverlo con datos de usuario
     await publicacion.populate("comentarios.usuarioId", "username email");
 
     res.status(201).json(publicacion);
   } catch (error) {
-    res.status(400).json({ message: "Error al agregar comentario", error });
+    res.status(400).json({ message: "Error al agregar comentario", error: error.message });
   }
 };
 
@@ -96,6 +127,7 @@ export const eliminarComentario = async (req, res) => {
   try {
     const { id, comentarioId } = req.params;
     const publicacion = await Publicacion.findById(id);
+
     if (!publicacion) return res.status(404).json({ message: "Publicación no encontrada" });
 
     publicacion.comentarios = publicacion.comentarios.filter(
@@ -105,6 +137,6 @@ export const eliminarComentario = async (req, res) => {
     await publicacion.save();
     res.json(publicacion);
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar comentario", error });
+    res.status(500).json({ message: "Error al eliminar comentario", error: error.message });
   }
 };
