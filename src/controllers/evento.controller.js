@@ -1,11 +1,10 @@
-// controllers/eventoController.js
 import Evento from "../models/Evento.js";
 import mongoose from "mongoose";
 
 // Crear un nuevo evento
 export const crearEvento = async (req, res) => {
   try {
-    const { titulo, descripcion, fecha, ubicacion, organizadorId } = req.body;
+    const { titulo, descripcion, fechaInicio, fechaFin, estado, ubicacion, organizadorId } = req.body;
 
     // Validaciones básicas
     if (!titulo || titulo.length < 3) {
@@ -16,8 +15,8 @@ export const crearEvento = async (req, res) => {
       return res.status(400).json({ message: "La descripción es obligatoria y debe tener al menos 10 caracteres" });
     }
 
-    if (!fecha || isNaN(Date.parse(fecha))) {
-      return res.status(400).json({ message: "La fecha es obligatoria y debe tener un formato válido" });
+    if (!fechaInicio || isNaN(Date.parse(fechaInicio)) || !fechaFin || isNaN(Date.parse(fechaFin))) {
+      return res.status(400).json({ message: "Las fechas son obligatorias y deben tener un formato válido" });
     }
 
     if (!ubicacion) {
@@ -39,9 +38,8 @@ export const crearEvento = async (req, res) => {
 // Actualizar un evento
 export const actualizarEvento = async (req, res) => {
   try {
-    const { titulo, descripcion, fecha, ubicacion } = req.body;
+    const { titulo, descripcion, fechaInicio, fechaFin, ubicacion } = req.body;
 
-    // Validaciones si se actualizan campos
     if (titulo && titulo.length < 3) {
       return res.status(400).json({ message: "El título debe tener al menos 3 caracteres" });
     }
@@ -50,8 +48,8 @@ export const actualizarEvento = async (req, res) => {
       return res.status(400).json({ message: "La descripción debe tener al menos 10 caracteres" });
     }
 
-    if (fecha && isNaN(Date.parse(fecha))) {
-      return res.status(400).json({ message: "La fecha debe tener un formato válido" });
+    if ((fechaInicio && isNaN(Date.parse(fechaInicio))) || (fechaFin && isNaN(Date.parse(fechaFin)))) {
+      return res.status(400).json({ message: "Las fechas deben tener un formato válido" });
     }
 
     const evento = await Evento.findByIdAndUpdate(req.params.id, req.body, {
@@ -66,6 +64,19 @@ export const actualizarEvento = async (req, res) => {
     res.status(200).json({ message: "Evento actualizado con éxito", evento });
   } catch (error) {
     res.status(400).json({ message: "Error al actualizar evento", error: error.message });
+  }
+};
+
+// Obtener todos los eventos
+export const obtenerEventos = async (req, res) => {
+  try {
+    const eventos = await Evento.find()
+      .populate("organizadorId", "nombre email") // opcional: datos del organizador
+      .populate("participantes", "nombre email"); // opcional: datos de participantes
+
+    res.status(200).json({ eventos });
+  } catch (error) {
+    res.status(400).json({ message: "Error al obtener eventos", error: error.message });
   }
 };
 

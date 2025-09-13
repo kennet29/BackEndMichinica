@@ -7,6 +7,7 @@ const MascotaSchema = new mongoose.Schema({
     enum: ["perro", "gato", "ave", "roedor", "otro"], 
     required: true 
   }, 
+  tarjetaVeterinaria:{type: Boolean,required:true},
   raza: { type: String }, // raza de la mascota
   edad: { type: Number }, // opcional, puedes calcularla con el cumpleaños
   cumpleaños: { type: Date }, // nuevo campo para fecha de nacimiento
