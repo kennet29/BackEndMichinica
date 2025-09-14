@@ -5,16 +5,16 @@ import { SECRET } from "../config.js";
 
 export const signupHandler = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { nombre, username, email, password } = req.body;  // 👈 agregamos nombre
 
-    // Crear un nuevo objeto de usuario
     const newUser = new User({
+      nombre,       // 👈 obligatorio
       username,
       email,
       password,
     });
 
-    // Siempre asigna el rol "user" al crear una cuenta
+    // Asignamos siempre rol "user"
     const role = await Role.findOne({ name: "user" });
     newUser.roles = [role._id];
 

@@ -1,6 +1,7 @@
-curl -X POST https://backendmaguey.onrender.com/api/auth/signup \
+curl -X POST http://localhost:4000/api/auth/signup \
   -H "Content-Type: application/json" \
   -d '{
+    "nombre": "Kenneth Josue Aguilar",
     "username": "kenneth",
     "email": "kenneth@example.com",
     "password": "123456"
