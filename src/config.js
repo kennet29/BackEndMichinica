@@ -1,7 +1,7 @@
 import { config } from "dotenv";
 config();
 
-export const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/test";
+export const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://kennethparrales:MICHINICA@mafystore.rswlg1d.mongodb.net/?retryWrites=true&w=majority&appName=MafyStore";
 
 export const PORT = process.env.PORT || 4000;
 export const SECRET = "MAGUEY";
