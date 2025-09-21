@@ -6,7 +6,7 @@ import {
   actualizarMascotaPerdida,
   eliminarMascotaPerdida,
   obtenerFoto, // 👈 nuevo import
-} from "../controllers/MacotaPerdida.controller.js";
+} from "../controllers/MascotaPerdida.controller.js";
 
 const router = express.Router();
 
