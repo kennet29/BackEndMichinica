@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const MascotaPerdidaSchema = new mongoose.Schema({
-  nombre: { type: String }, // si se conoce el nombre
+  nombre: { type: String }, 
   especie: { 
     type: String, 
     enum: ["perro", "gato", "ave", "roedor", "otro"], 
@@ -9,10 +9,16 @@ const MascotaPerdidaSchema = new mongoose.Schema({
   },
   raza: { type: String },
   sexo: { type: String, enum: ["macho", "hembra"] },
-  descripcion: { type: String }, // características especiales
-  fotos: [{ type: String }], // imágenes de la mascota
-  fechaPerdida: { type: Date, required: true }, // cuándo se perdió
-  lugarPerdida: { type: String, required: true }, // dirección o referencia
+  descripcion: { type: String },
+  
+  // En lugar de URLs, guardamos los IDs de los archivos en GridFS
+  fotos: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "uploads.files" } 
+    // uploads.files es la colección que crea GridFS
+  ],
+
+  fechaPerdida: { type: Date, required: true },
+  lugarPerdida: { type: String, required: true },
   contacto: {
     telefono: { type: String, required: true },
     email: { type: String }

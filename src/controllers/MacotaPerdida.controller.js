@@ -1,13 +1,13 @@
 import MascotaPerdida from "../models/MascotaPerdida.js";
 import mongoose from "mongoose";
 
-// Crear publicación de mascota perdida
+// Crear publicación de mascota perdida con fotos (GridFS)
 export const crearMascotaPerdida = async (req, res) => {
   try {
     const { nombre, especie, raza, descripcion, fechaPerdida, lugarPerdida, usuarioId } = req.body;
 
     // Validaciones
-    if (!nombre || nombre.length < 2) {
+    if (!nombre) {
       return res.status(400).json({ message: "El nombre es obligatorio y debe tener al menos 2 caracteres" });
     }
     if (!especie) {
@@ -26,7 +26,14 @@ export const crearMascotaPerdida = async (req, res) => {
       return res.status(400).json({ message: "El usuarioId es obligatorio y debe ser válido" });
     }
 
-    const mascotaPerdida = new MascotaPerdida(req.body);
+    // Guardar IDs de fotos en GridFS (si se subieron)
+    const fotosIds = req.files ? req.files.map(file => file.id) : [];
+
+    const mascotaPerdida = new MascotaPerdida({
+      ...req.body,
+      fotos: fotosIds,
+    });
+
     await mascotaPerdida.save();
 
     res.status(201).json({ message: "Publicación creada con éxito", mascotaPerdida });
@@ -86,6 +93,12 @@ export const actualizarMascotaPerdida = async (req, res) => {
       return res.status(400).json({ message: "La fecha de pérdida debe ser válida" });
     }
 
+    // Si se subieron nuevas fotos, las añadimos
+    const nuevasFotos = req.files ? req.files.map(file => file.id) : [];
+    if (nuevasFotos.length > 0) {
+      req.body.fotos = nuevasFotos;
+    }
+
     const mascota = await MascotaPerdida.findByIdAndUpdate(req.params.id, req.body, { new: true });
 
     if (!mascota) {
@@ -114,5 +127,29 @@ export const eliminarMascotaPerdida = async (req, res) => {
     res.status(200).json({ message: "Publicación eliminada con éxito" });
   } catch (error) {
     res.status(500).json({ message: "Error al eliminar publicación", error: error.message });
+  }
+};
+
+
+
+export const obtenerFoto = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+      bucketName: "uploads", // 👈 asegúrate que coincide con multer-gridfs-storage
+    });
+
+    const _id = new mongoose.Types.ObjectId(id);
+    const downloadStream = bucket.openDownloadStream(_id);
+
+    downloadStream.on("error", () => {
+      res.status(404).json({ message: "Imagen no encontrada" });
+    });
+
+    res.set("Content-Type", "image/jpeg"); // puedes detectar el tipo MIME
+    downloadStream.pipe(res);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener imagen", error: error.message });
   }
 };
