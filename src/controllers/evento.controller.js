@@ -27,8 +27,21 @@ export const crearEvento = async (req, res) => {
       return res.status(400).json({ message: "El organizadorId es obligatorio y debe ser válido" });
     }
 
+    // 🚨 Validar duplicado (título + ubicación + fechaInicio)
+    const eventoExistente = await Evento.findOne({
+      titulo: titulo.trim(),
+      ubicacion: ubicacion.trim(),
+      fechaInicio: new Date(fechaInicio)
+    });
+
+    if (eventoExistente) {
+      return res.status(400).json({ message: "Ya existe un evento con ese título, ubicación y fecha de inicio" });
+    }
+
+    // Crear nuevo evento
     const evento = new Evento(req.body);
     await evento.save();
+
     res.status(201).json({ message: "Evento creado con éxito", evento });
   } catch (error) {
     res.status(400).json({ message: "Error al crear evento", error: error.message });
@@ -71,12 +84,37 @@ export const actualizarEvento = async (req, res) => {
 export const obtenerEventos = async (req, res) => {
   try {
     const eventos = await Evento.find()
-      .populate("organizadorId", "nombre email") // opcional: datos del organizador
-      .populate("participantes", "nombre email"); // opcional: datos de participantes
+      .populate("organizadorId", "nombre email") // ✅ usa modelo User
+      .populate("participantes", "nombre email"); // ✅ usa modelo User
 
-    res.status(200).json({ eventos });
+    const eventosConCantidad = eventos.map(e => ({
+      ...e.toObject(),
+      cantidadParticipantes: e.participantes.length
+    }));
+
+    res.status(200).json({ eventos: eventosConCantidad });
   } catch (error) {
     res.status(400).json({ message: "Error al obtener eventos", error: error.message });
+  }
+};
+
+// Obtener un evento por ID
+export const obtenerEventoPorId = async (req, res) => {
+  try {
+    const evento = await Evento.findById(req.params.id)
+      .populate("organizadorId", "nombre email") // ✅ usa modelo User
+      .populate("participantes", "nombre email"); // ✅ usa modelo User
+
+    if (!evento) {
+      return res.status(404).json({ message: "Evento no encontrado" });
+    }
+
+    res.status(200).json({
+      evento,
+      cantidadParticipantes: evento.participantes.length
+    });
+  } catch (error) {
+    res.status(400).json({ message: "Error al obtener el evento", error: error.message });
   }
 };
 
@@ -94,7 +132,8 @@ export const unirseEvento = async (req, res) => {
       return res.status(404).json({ message: "Evento no encontrado" });
     }
 
-    if (evento.participantes.includes(usuarioId)) {
+    // ✅ comparación segura con ObjectId
+    if (evento.participantes.some(id => id.toString() === usuarioId)) {
       return res.status(400).json({ message: "El usuario ya está inscrito en este evento" });
     }
 
@@ -122,7 +161,7 @@ export const salirEvento = async (req, res) => {
     }
 
     evento.participantes = evento.participantes.filter(
-      (id) => id.toString() !== usuarioId
+      id => id.toString() !== usuarioId
     );
     await evento.save();
 

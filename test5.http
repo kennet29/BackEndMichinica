@@ -1,0 +1,1 @@
+curl -X GET http://localhost:3000/api/enfermedades/mascota/68cf6c830b7db516ab216abf

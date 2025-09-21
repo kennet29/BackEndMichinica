@@ -1,0 +1,9 @@
+curl -X POST http://localhost:4000/api/enfermedades \
+-H "Content-Type: application/json" \
+-d '{
+  "mascotaId": "68cf6c830b7db516ab216abf",
+  "nombre": "Artritis",
+  "diagnosticadaEn": "2024-05-15",
+  "tratamiento": "Medicamentos antiinflamatorios",
+  "notas": "Revisar cada 6 meses"
+}'

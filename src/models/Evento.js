@@ -5,10 +5,15 @@ const EventoSchema = new mongoose.Schema({
   descripcion: { type: String, required: true },
   ubicacion: { type: String, required: true },
   fechaInicio: { type: Date, required: true },
-  estado:{type:Boolean,required:true},
+  estado: { 
+    type: String, 
+    enum: ["activo", "cancelado", "finalizado"], 
+    default: "activo" 
+  },
+  
   fechaFin: { type: Date, required: true },
-  organizadorId: { type: mongoose.Schema.Types.ObjectId, ref: "Usuario", required: true },
-  participantes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Usuario" }]
+  organizadorId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  participantes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
 });
 
 export default mongoose.model("Evento", EventoSchema);

@@ -1,0 +1,12 @@
+curl -X POST http://localhost:4000/api/mascotas \
+-H "Content-Type: application/json" \
+-d '{
+  "nombre": "Pelusa",
+  "especie": "conejo",
+  "edad": 1,
+  "usuarioId": "68c6f6510c0a40556d6ada5d",
+  "tarjetaVeterinaria": false,
+  "sexo": "hembra",
+  "descripcion": "Conejita blanca muy juguetona"
+}
+'

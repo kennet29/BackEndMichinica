@@ -5,7 +5,8 @@ import {
   obtenerDesparasitacionPorId,
   actualizarDesparasitacion,
   eliminarDesparasitacion,
-} from "../controllers/desparasitacionController.js";
+  obtenerDesparasitacionesPorMascota
+} from "../controllers/Desparcitacion.controller.js";
 
 const router = express.Router();
 
@@ -14,5 +15,8 @@ router.get("/", obtenerDesparasitaciones);
 router.get("/:id", obtenerDesparasitacionPorId);
 router.put("/:id", actualizarDesparasitacion);
 router.delete("/:id", eliminarDesparasitacion);
+
+// 👇 nuevo endpoint para consultar por mascota
+router.get("/mascota/:mascotaId", obtenerDesparasitacionesPorMascota);
 
 export default router;

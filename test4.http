@@ -1,0 +1,7 @@
+PUT http://localhost:4000/api/eventos/68cf1b14e4d1331792ab4909
+Content-Type: application/json
+
+{
+  "descripcion": "Evento actualizado con más actividades",
+  "ubicacion": "Polideportivo Municipal"
+}

@@ -1,45 +1,38 @@
-import EnfermedadCronica from "../models/EnfermedadCronica.js";
 import mongoose from "mongoose";
+import EnfermedadCronica from "../models/EnfermedadCronica.js";
 
-// 📌 Crear enfermedad crónica
-export const crearEnfermedad = async (req, res) => {
+
+export const crearEnfermedadCronica = async (req, res) => {
   try {
-    const { mascotaId, nombre, diagnostico, fechaDiagnostico } = req.body;
+    const { mascotaId, nombre } = req.body;
 
-    // Validaciones de campos obligatorios
-    if (!mascotaId || !nombre || !diagnostico || !fechaDiagnostico) {
+    if (!mascotaId || !nombre) {
       return res.status(400).json({
-        message: "Todos los campos (mascotaId, nombre, diagnostico, fechaDiagnostico) son obligatorios",
+        message: "El mascotaId y el nombre son obligatorios",
       });
-    }
-
-    // Validar ObjectId
-    if (!mongoose.Types.ObjectId.isValid(mascotaId)) {
-      return res.status(400).json({ message: "El ID de la mascota no es válido" });
     }
 
     const enfermedad = new EnfermedadCronica(req.body);
     await enfermedad.save();
 
-    res.status(201).json(enfermedad);
+    res.status(201).json({ message: "Enfermedad crónica creada con éxito", enfermedad });
   } catch (error) {
-    res.status(400).json({ message: "Error al crear enfermedad", error: error.message });
+    res.status(400).json({ message: "Error al crear enfermedad crónica", error: error.message });
   }
 };
 
-// 📌 Obtener todas las enfermedades crónicas de una mascota
-export const obtenerEnfermedades = async (req, res) => {
+export const obtenerEnfermedadesPorMascota = async (req, res) => {
   try {
     const { mascotaId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(mascotaId)) {
-      return res.status(400).json({ message: "El ID de la mascota no es válido" });
+    if (!mascotaId) {
+      return res.status(400).json({ message: "Se requiere el ID de la mascota" });
     }
 
-    const enfermedades = await EnfermedadCronica.find({ mascotaId });
+    const enfermedades = await EnfermedadCronica.find({ mascotaId }).sort({ diagnosticadaEn: -1 });
 
     if (enfermedades.length === 0) {
-      return res.status(404).json({ message: "No se encontraron enfermedades para esta mascota" });
+      return res.status(404).json({ message: "No se encontraron enfermedades crónicas para esta mascota" });
     }
 
     res.status(200).json(enfermedades);
@@ -48,69 +41,47 @@ export const obtenerEnfermedades = async (req, res) => {
   }
 };
 
-// 📌 Obtener enfermedad por ID
 export const obtenerEnfermedadPorId = async (req, res) => {
   try {
-    const { id } = req.params;
+    const enfermedad = await EnfermedadCronica.findById(req.params.id);
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "El ID proporcionado no es válido" });
-    }
-
-    const enfermedad = await EnfermedadCronica.findById(id);
     if (!enfermedad) {
-      return res.status(404).json({ message: "Enfermedad no encontrada" });
+      return res.status(404).json({ message: "Enfermedad crónica no encontrada" });
     }
 
     res.status(200).json(enfermedad);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener enfermedad", error: error.message });
+    res.status(500).json({ message: "Error al obtener enfermedad crónica", error: error.message });
   }
 };
 
-// 📌 Actualizar enfermedad
-export const actualizarEnfermedad = async (req, res) => {
+export const actualizarEnfermedadCronica = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "El ID proporcionado no es válido" });
-    }
-
-    const { mascotaId } = req.body;
-    if (mascotaId && !mongoose.Types.ObjectId.isValid(mascotaId)) {
-      return res.status(400).json({ message: "El ID de la mascota no es válido" });
-    }
-
-    const enfermedad = await EnfermedadCronica.findByIdAndUpdate(id, req.body, { new: true });
+    const enfermedad = await EnfermedadCronica.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!enfermedad) {
-      return res.status(404).json({ message: "Enfermedad no encontrada" });
+      return res.status(404).json({ message: "Enfermedad crónica no encontrada" });
     }
 
-    res.status(200).json(enfermedad);
+    res.status(200).json({ message: "Enfermedad crónica actualizada con éxito", enfermedad });
   } catch (error) {
-    res.status(400).json({ message: "Error al actualizar enfermedad", error: error.message });
+    res.status(400).json({ message: "Error al actualizar enfermedad crónica", error: error.message });
   }
 };
 
-// 📌 Eliminar enfermedad
-export const eliminarEnfermedad = async (req, res) => {
+export const eliminarEnfermedadCronica = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "El ID proporcionado no es válido" });
-    }
-
-    const enfermedad = await EnfermedadCronica.findByIdAndDelete(id);
+    const enfermedad = await EnfermedadCronica.findByIdAndDelete(req.params.id);
 
     if (!enfermedad) {
-      return res.status(404).json({ message: "Enfermedad no encontrada" });
+      return res.status(404).json({ message: "Enfermedad crónica no encontrada" });
     }
 
-    res.status(200).json({ message: "Enfermedad eliminada con éxito" });
+    res.status(200).json({ message: "Enfermedad crónica eliminada con éxito" });
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar enfermedad", error: error.message });
+    res.status(500).json({ message: "Error al eliminar enfermedad crónica", error: error.message });
   }
 };
