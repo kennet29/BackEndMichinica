@@ -1,4 +1,3 @@
-// models/MascotaPerdida.js
 import mongoose from "mongoose";
 
 const MascotaPerdidaSchema = new mongoose.Schema(
@@ -9,8 +8,8 @@ const MascotaPerdidaSchema = new mongoose.Schema(
     sexo: { type: String },
     descripcion: { type: String, required: true },
     fotos: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "uploads.files" } 
-      // 👆 Aquí guardamos los _id de GridFS
+      { type: String } 
+      // 👆 Guardamos ID de GridFS o filename como string
     ],
     fechaPerdida: { type: Date, required: true },
     lugarPerdida: { type: String, required: true },
