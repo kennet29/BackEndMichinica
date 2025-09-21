@@ -1,6 +1,7 @@
 // src/routes/MascotaPerdida.routes.js
 import express from "express";
-import upload from "../database.js";
+import { upload } from "../database.js";
+
 import {
   crearMascotaPerdida,
   obtenerMascotasPerdidas,

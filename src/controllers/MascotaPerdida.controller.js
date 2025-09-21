@@ -68,8 +68,9 @@ export const crearMascotaPerdida = async (req, res) => {
       return res.status(400).json({ message: "El teléfono de contacto es obligatorio" });
     }
 
-    // Guardar IDs de fotos en GridFS (si se subieron)
-    const fotosIds = req.files ? req.files.map((file) => file.id) : [];
+// Guardar IDs de fotos en GridFS (si se subieron)
+const fotosIds = req.files ? req.files.map(file => file.id || file.filename) : [];
+
 
     const mascotaPerdida = new MascotaPerdida({
       nombre: nombreClean,
