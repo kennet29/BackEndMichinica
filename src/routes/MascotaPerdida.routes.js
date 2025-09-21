@@ -1,4 +1,3 @@
-// src/routes/MascotaPerdida.routes.js
 import express from "express";
 import { upload } from "../database.js";
 
@@ -13,8 +12,28 @@ import {
 
 const router = express.Router();
 
-// 📌 Crear publicación (sube hasta 5 fotos)
+// 📌 Crear publicación (sube hasta 5 fotos en el mismo request)
 router.post("/", upload.array("fotos", 5), crearMascotaPerdida);
+
+// 📌 Subir una sola foto y devolver fileId (flujo alterno)
+router.post("/upload", upload.single("file"), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No se recibió ningún archivo" });
+    }
+
+    console.log("📷 Archivo subido:", req.file);
+
+    res.status(201).json({
+      message: "✅ Imagen subida con éxito",
+      fileId: req.file.id || req.file._id, // 👈 ID en GridFS
+      filename: req.file.filename,
+    });
+  } catch (error) {
+    console.error("❌ Error subiendo archivo:", error);
+    res.status(500).json({ message: "Error al subir archivo", error: error.message });
+  }
+});
 
 // 📌 Obtener todas
 router.get("/", obtenerMascotasPerdidas);
