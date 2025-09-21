@@ -1,4 +1,3 @@
-// routes/eventoRoutes.js
 import express from "express";
 import {
   crearEvento,
@@ -8,6 +7,7 @@ import {
   salirEvento,
   obtenerEventoPorId,
 } from "../controllers/Evento.controller.js";
+
 
 const router = express.Router();
 
