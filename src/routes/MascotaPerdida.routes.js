@@ -16,8 +16,6 @@ router.get("/", obtenerMascotasPerdidas);
 router.get("/:id", obtenerMascotaPerdidaPorId);
 router.put("/:id", actualizarMascotaPerdida);
 router.delete("/:id", eliminarMascotaPerdida);
-
-// Endpoint para imágenes de GridFS
 router.get("/foto/:id", obtenerFoto); // 👈 aquí se expone la foto
 
 export default router;

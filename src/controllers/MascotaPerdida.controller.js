@@ -1,26 +1,25 @@
 import MascotaPerdida from "../models/MascotaPerdida.js";
 import mongoose from "mongoose";
 
-// Crear publicación de mascota perdida con fotos (GridFS)
 export const crearMascotaPerdida = async (req, res) => {
   try {
     const { nombre, especie, raza, descripcion, fechaPerdida, lugarPerdida, usuarioId } = req.body;
 
-    // Validaciones
-    if (!nombre) {
+    // 🔹 Validaciones
+    if (!nombre || nombre.trim().length < 2) {
       return res.status(400).json({ message: "El nombre es obligatorio y debe tener al menos 2 caracteres" });
     }
     if (!especie) {
       return res.status(400).json({ message: "La especie es obligatoria" });
     }
-    if (!descripcion || descripcion.length < 10) {
+    if (!descripcion || descripcion.trim().length < 10) {
       return res.status(400).json({ message: "La descripción es obligatoria y debe tener al menos 10 caracteres" });
     }
     if (!fechaPerdida || isNaN(Date.parse(fechaPerdida))) {
       return res.status(400).json({ message: "La fecha de pérdida es obligatoria y debe ser válida" });
     }
-    if (!lugarPerdida) {
-      return res.status(400).json({ message: "El lugar de pérdida es obligatorio" });
+    if (!lugarPerdida || lugarPerdida.trim().length < 2) {
+      return res.status(400).json({ message: "El lugar de pérdida es obligatorio y debe tener al menos 2 caracteres" });
     }
     if (!usuarioId || !mongoose.Types.ObjectId.isValid(usuarioId)) {
       return res.status(400).json({ message: "El usuarioId es obligatorio y debe ser válido" });
