@@ -11,9 +11,9 @@ import DesparacitacionRoutes from "./routes/Desparacitcion.routes.js";
 import MascotasRoutes from "./routes/Mascota.routes.js"
 import MascotaperdidasRoutes from "./routes/MascotaPerdida.routes.js"
 import AdopcionRoutes from "./routes/Adopcion.routes.js";
-import EventoRoutes from "./routes/Eventos.routes.js"
-import PublicacionRoutes from "./routes/publicacion.routes.js"
-import VacunasRoutes from "./routes/vacunas.routes.js"
+import EventoRoutes from "./routes/eventos.routes.js";
+import PublicacionRoutes from "./routes/publicacion.routes.js";
+import VacunasRoutes from "./routes/vacunas.routes.js";
 import EnfermedadCronicaRoutes from "./models/EnfermedadCronica.js";
 
 const app = express();
