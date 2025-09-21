@@ -4,7 +4,6 @@ import mongoose from "mongoose";
 // 🔹 Función auxiliar para limpiar strings
 const cleanString = (value) => (typeof value === "string" ? value.trim() : value || "");
 
-// Crear publicación de mascota perdida
 export const crearMascotaPerdida = async (req, res) => {
   try {
     console.log("📥 BODY RECIBIDO:", req.body);
@@ -26,7 +25,7 @@ export const crearMascotaPerdida = async (req, res) => {
     const descripcionClean = cleanString(descripcion);
     const lugarClean = cleanString(lugarPerdida);
 
-    // Contacto puede venir como contacto[...] o como campos sueltos
+    // Contacto puede venir como objeto o como campos sueltos
     const telefono =
       req.body?.contacto?.telefono || req.body["contacto[telefono]"] || req.body.telefono;
     const email =
@@ -68,14 +67,15 @@ export const crearMascotaPerdida = async (req, res) => {
       return res.status(400).json({ message: "El teléfono de contacto es obligatorio" });
     }
 
-// Guardar IDs de fotos en GridFS (si se subieron)
-const fotosIds = req.files ? req.files.map(file => file.id || file.filename) : [];
-
+    // Guardar IDs de fotos en GridFS (si se subieron)
+    const fotosIds = Array.isArray(req.files)
+      ? req.files.map((file) => file.id || file._id || file.filename)
+      : [];
 
     const mascotaPerdida = new MascotaPerdida({
       nombre: nombreClean,
       especie,
-      raza: cleanString(raza),
+      raza: raza ? cleanString(raza) : "",
       sexo,
       descripcion: descripcionClean,
       fechaPerdida: new Date(fechaPerdida),
@@ -98,6 +98,7 @@ const fotosIds = req.files ? req.files.map(file => file.id || file.filename) : [
       .json({ message: "Error al crear publicación", error: error.message });
   }
 };
+
 
 // Obtener todas las mascotas perdidas
 export const obtenerMascotasPerdidas = async (req, res) => {
