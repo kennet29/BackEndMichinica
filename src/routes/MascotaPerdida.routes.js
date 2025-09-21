@@ -1,5 +1,6 @@
+// src/routes/MascotaPerdida.routes.js
 import express from "express";
-import upload from "../middlewares/upload.js";
+import upload from "../database.js";
 import {
   crearMascotaPerdida,
   obtenerMascotasPerdidas,
@@ -11,13 +12,14 @@ import {
 
 const router = express.Router();
 
-// 👇 Aquí cambiamos a upload.single para manejar una sola foto
-router.post("/", upload.single("fotos"), crearMascotaPerdida);
-
+// 👇 Aquí subes varias fotos con el campo "fotos"
+router.post("/", upload.array("fotos", 5), crearMascotaPerdida);
 router.get("/", obtenerMascotasPerdidas);
 router.get("/:id", obtenerMascotaPerdidaPorId);
-router.put("/:id", upload.single("fotos"), actualizarMascotaPerdida);
+router.put("/:id", upload.array("fotos", 5), actualizarMascotaPerdida);
 router.delete("/:id", eliminarMascotaPerdida);
+
+// Ruta para ver fotos
 router.get("/foto/:id", obtenerFoto);
 
 export default router;

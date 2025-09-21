@@ -1,19 +1,24 @@
+// src/storage.js
 import multer from "multer";
 import { GridFsStorage } from "multer-gridfs-storage";
-import mongoose from "mongoose";
-import { MONGODB_URI } from "../config.js";
+import { MONGODB_URI } from "./config.js";
 
-// ⚡ Conexión ya inicializada en tu app
+// ⚡ Configuración de almacenamiento en GridFS
 const storage = new GridFsStorage({
   url: MONGODB_URI,
   file: (req, file) => {
-    return {
-      filename: Date.now() + "-" + file.originalname,
-      bucketName: "uploads", // 👈 debe coincidir con el GridFSBucket
-    };
+    return new Promise((resolve) => {
+      const filename = `${Date.now()}-${file.originalname}`;
+      const fileInfo = {
+        filename,
+        bucketName: "uploads", // 👈 colecciones: uploads.files y uploads.chunks
+      };
+      resolve(fileInfo);
+    });
   },
 });
 
+// 📦 Middleware Multer
 const upload = multer({ storage });
 
 export default upload;
