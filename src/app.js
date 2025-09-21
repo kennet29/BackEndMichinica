@@ -14,8 +14,9 @@ import AdopcionRoutes from "./routes/Adopcion.routes.js";
 //import EventoRoutes from "./routes/eventos.routes.js";
 import PublicacionRoutes from "./routes/publicacion.routes.js";
 import VacunasRoutes from "./routes/vacunas.routes.js";
-import EnfermedadCronicaRoutes from "./models/EnfermedadCronica.js";
-
+import EnfermedadCronicaRoutes from "./routes/enfermedadcronica.routes.js";
+import OperacionesRoutes from "./routes/Operaciones.routes.js"
+ 
 const app = express();
 app.set("port", process.env.PORT || 4000);
 app.set('view engine','ejs');
@@ -55,6 +56,7 @@ app.use("/api/notificaciones",NotificacionRoutes);
 app.use("/api/desparacitaciones",DesparacitacionRoutes);
 app.use("/api/vacunas",VacunasRoutes);
 app.use("/api/enfermedades",EnfermedadCronicaRoutes);
-
+app.use("/api/operaciones",OperacionesRoutes);
+app.use("/api/mascotas-perdidas",MascotaperdidasRoutes)
 
 export default app;

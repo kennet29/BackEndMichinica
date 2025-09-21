@@ -1,9 +1,6 @@
-curl -X POST http://localhost:4000/api/enfermedades \
--H "Content-Type: application/json" \
--d '{
-  "mascotaId": "68cf6c830b7db516ab216abf",
-  "nombre": "Artritis",
-  "diagnosticadaEn": "2024-05-15",
-  "tratamiento": "Medicamentos antiinflamatorios",
-  "notas": "Revisar cada 6 meses"
-}'
+curl -X PUT http://localhost:4000/api/mascotas-perdidas/68d03ace0b9c87548d4d3afc \
+  -H "Content-Type: application/json" \
+  -d '{
+    "descripcion": "Perro labrador negro, muy juguetón, lleva collar rojo y placa de identificación.",
+    "estado": "encontrada"
+  }'

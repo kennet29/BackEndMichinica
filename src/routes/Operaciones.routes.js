@@ -5,14 +5,16 @@ import {
   obtenerOperacionPorId,
   actualizarOperacion,
   eliminarOperacion,
-} from "../controllers/operacionController.js";
+  obtenerOperacionesPorMascota, 
+} from "../controllers/Operaciones.controller.js";
 
 const router = express.Router();
 
-
 router.post("/", crearOperacion);
 router.get("/", obtenerOperaciones);
+router.get("/mascota/:mascotaId", obtenerOperacionesPorMascota);
 router.get("/:id", obtenerOperacionPorId);
 router.put("/:id", actualizarOperacion);
 router.delete("/:id", eliminarOperacion);
+
 export default router;

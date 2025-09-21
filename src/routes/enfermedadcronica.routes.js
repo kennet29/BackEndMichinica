@@ -5,7 +5,7 @@ import {
   obtenerEnfermedadPorId,
   actualizarEnfermedadCronica,
   eliminarEnfermedadCronica,
-} from "../controllers/enfermedadCronicaController.js";
+} from "../controllers/enfermedades.controller.js";
 
 const router = express.Router();
 
