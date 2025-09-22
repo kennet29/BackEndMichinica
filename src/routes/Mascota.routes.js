@@ -1,5 +1,5 @@
-// routes/mascotaRoutes.js
 import express from "express";
+import { upload } from "../database.js"; // tu config de multer-gridfs
 import {
   crearMascota,
   obtenerMascotas,
@@ -10,10 +10,19 @@ import {
 
 const router = express.Router();
 
-router.post("/", crearMascota);
-router.get("/", obtenerMascotas);
+// 📌 Crear mascota (sube hasta 5 fotos)
+router.post("/", upload.array("fotos", 5), crearMascota);
+
+// 📌 Obtener todas las mascotas de un usuario
+router.get("/usuario/:usuarioId", obtenerMascotas);
+
+// 📌 Obtener una mascota por ID
 router.get("/:id", obtenerMascotaPorId);
-router.put("/:id", actualizarMascota);
+
+// 📌 Actualizar mascota
+router.put("/:id", upload.array("fotos", 5), actualizarMascota);
+
+// 📌 Eliminar mascota
 router.delete("/:id", eliminarMascota);
 
 export default router;

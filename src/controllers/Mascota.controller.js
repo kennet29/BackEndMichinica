@@ -1,200 +1,153 @@
 import Mascota from "../models/Mascota.js";
-import mongoose from "mongoose";
 
-// Crear mascota
+// 📌 Crear nueva mascota
 export const crearMascota = async (req, res) => {
   try {
-    const { nombre, especie, raza, edad, usuarioId, tarjetaVeterinaria, sexo } = req.body;
+    const {
+      nombre,
+      especie,
+      tarjetaVeterinaria,
+      raza,
+      cumpleaños,
+      sexo,
+      descripcion,
+      usuarioId,
+    } = req.body;
 
+    // 🔹 Validaciones
     if (!nombre || nombre.trim().length < 2) {
-      return res.status(400).json({ 
-        message: "El nombre es obligatorio y debe tener al menos 2 caracteres" 
-      });
+      return res.status(400).json({ message: "El nombre debe tener al menos 2 caracteres." });
     }
 
-    if (!especie || especie.trim().length < 3) {
-      return res.status(400).json({ 
-        message: "La especie es obligatoria y debe tener al menos 3 caracteres" 
-      });
+    if (!especie || !["perro", "gato", "ave", "roedor", "tortuga", "conejo", "otro"].includes(especie)) {
+      return res.status(400).json({ message: "Especie inválida. Opciones: perro, gato, ave, roedor, tortuga, conejo, otro." });
+    }
+
+    if (tarjetaVeterinaria === undefined) {
+      return res.status(400).json({ message: "Debe indicar si tiene tarjeta veterinaria (true/false)." });
     }
 
     if (!sexo || !["macho", "hembra"].includes(sexo)) {
-      return res.status(400).json({ 
-        message: "El sexo es obligatorio y debe ser 'macho' o 'hembra'" 
-      });
+      return res.status(400).json({ message: "Sexo inválido. Opciones: macho o hembra." });
     }
 
-    if (edad !== undefined && (isNaN(edad) || edad < 0 || edad > 50)) {
-      return res.status(400).json({ 
-        message: "La edad debe ser un número válido entre 0 y 50" 
-      });
+    if (!usuarioId) {
+      return res.status(400).json({ message: "El usuarioId es obligatorio." });
     }
 
-    if (!usuarioId || !mongoose.Types.ObjectId.isValid(usuarioId)) {
-      return res.status(400).json({ 
-        message: "El usuarioId es obligatorio y debe ser válido" 
-      });
+    // 📷 Manejo de archivos
+    let fotoPerfilId = null;
+    let fotosIds = [];
+
+    if (req.files && req.files.length > 0) {
+      // Primera foto será la de perfil
+      fotoPerfilId = req.files[0].id || req.files[0]._id;
+
+      // Todas a la galería
+      fotosIds = req.files.map((file) => file.id || file._id);
     }
 
-    if (raza && raza.length < 2) {
-      return res.status(400).json({ 
-        message: "La raza debe tener al menos 2 caracteres" 
-      });
-    }
-
-    if (tarjetaVeterinaria !== true && tarjetaVeterinaria !== false) {
-      return res.status(400).json({ 
-        message: "La tarjetaVeterinaria debe ser un valor booleano (true/false)" 
-      });
-    }
-
-    // Validar duplicado
-    const mascotaExistente = await Mascota.findOne({ 
-      usuarioId, 
-      nombre: nombre.trim() 
+    const nuevaMascota = new Mascota({
+      nombre: nombre.trim(),
+      especie,
+      tarjetaVeterinaria,
+      raza: raza?.trim(),
+      cumpleaños: cumpleaños ? new Date(cumpleaños) : null,
+      sexo,
+      descripcion: descripcion?.trim(),
+      usuarioId,
+      fotoPerfilId,
+      fotosIds,
     });
 
-    if (mascotaExistente) {
-      return res.status(400).json({ 
-        message: "Ya tienes una mascota registrada con ese nombre" 
-      });
-    }
+    await nuevaMascota.save();
 
-    const mascota = new Mascota(req.body);
-    await mascota.save();
-
-    res.status(201).json({ message: "Mascota registrada con éxito", mascota });
+    res.status(201).json({
+      message: "✅ Mascota registrada correctamente",
+      mascota: nuevaMascota,
+    });
   } catch (error) {
-    res.status(400).json({ 
-      message: "Error al registrar la mascota", 
-      error: error.message 
+    console.error("❌ Error al crear mascota:", error);
+    res.status(500).json({
+      message: "Error al registrar la mascota",
+      error: error.message,
     });
   }
 };
 
-// Obtener todas las mascotas
+// 📌 Obtener todas las mascotas de un usuario
 export const obtenerMascotas = async (req, res) => {
   try {
-    const mascotas = await Mascota.find().populate("usuarioId", "username email");
-    res.status(200).json(mascotas);
+    const { usuarioId } = req.params;
+
+    if (!usuarioId) {
+      return res.status(400).json({ message: "Se requiere el usuarioId." });
+    }
+
+    const mascotas = await Mascota.find({ usuarioId });
+
+    res.json(mascotas);
   } catch (error) {
-    res.status(500).json({ 
-      message: "Error al obtener las mascotas", 
-      error: error.message 
-    });
+    res.status(500).json({ message: "Error al obtener mascotas", error: error.message });
   }
 };
 
-// Obtener mascota por ID
+// 📌 Obtener mascota por ID
 export const obtenerMascotaPorId = async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: "El ID de la mascota no es válido" });
-    }
-
-    const mascota = await Mascota.findById(req.params.id).populate("usuarioId", "username email");
-
-    if (!mascota) {
-      return res.status(404).json({ message: "Mascota no encontrada" });
-    }
-
-    res.status(200).json(mascota);
+    const mascota = await Mascota.findById(req.params.id);
+    if (!mascota) return res.status(404).json({ message: "Mascota no encontrada" });
+    res.json(mascota);
   } catch (error) {
-    res.status(500).json({ 
-      message: "Error al obtener la mascota", 
-      error: error.message 
-    });
+    res.status(500).json({ message: "Error al obtener mascota", error: error.message });
   }
 };
 
-// Actualizar mascota
+// 📌 Actualizar mascota
 export const actualizarMascota = async (req, res) => {
   try {
-    if (Object.keys(req.body).length === 0) {
-      return res.status(400).json({ message: "No se enviaron datos para actualizar" });
+    const updates = req.body;
+
+    // 🔹 Validaciones básicas
+    if (updates.nombre && updates.nombre.trim().length < 2) {
+      return res.status(400).json({ message: "El nombre debe tener al menos 2 caracteres." });
     }
 
-    const { nombre, especie, edad, raza, usuarioId, tarjetaVeterinaria, sexo } = req.body;
-
-    if (nombre && nombre.trim().length < 2) {
-      return res.status(400).json({ message: "El nombre debe tener al menos 2 caracteres" });
+    if (updates.especie && !["perro", "gato", "ave", "roedor", "tortuga", "conejo", "otro"].includes(updates.especie)) {
+      return res.status(400).json({ message: "Especie inválida." });
     }
 
-    if (especie && especie.trim().length < 3) {
-      return res.status(400).json({ message: "La especie debe tener al menos 3 caracteres" });
+    if (updates.sexo && !["macho", "hembra"].includes(updates.sexo)) {
+      return res.status(400).json({ message: "Sexo inválido." });
     }
 
-    if (sexo && !["macho", "hembra"].includes(sexo)) {
-      return res.status(400).json({ 
-        message: "El sexo debe ser 'macho' o 'hembra'" 
-      });
+    // 📷 Si vienen nuevas fotos, reemplazamos
+    if (req.files && req.files.length > 0) {
+      updates.fotoPerfilId = req.files[0].id || req.files[0]._id;
+      updates.fotosIds = req.files.map((file) => file.id || file._id);
     }
 
-    if (edad !== undefined && (isNaN(edad) || edad < 0 || edad > 50)) {
-      return res.status(400).json({ message: "La edad debe ser un número válido entre 0 y 50" });
-    }
-
-    if (usuarioId && !mongoose.Types.ObjectId.isValid(usuarioId)) {
-      return res.status(400).json({ message: "El usuarioId no es válido" });
-    }
-
-    if (raza && raza.length < 2) {
-      return res.status(400).json({ message: "La raza debe tener al menos 2 caracteres" });
-    }
-
-    if (tarjetaVeterinaria !== undefined && typeof tarjetaVeterinaria !== "boolean") {
-      return res.status(400).json({ message: "La tarjetaVeterinaria debe ser un valor booleano (true/false)" });
-    }
-
-    if (nombre && usuarioId) {
-      const mascotaDuplicada = await Mascota.findOne({
-        usuarioId,
-        nombre: nombre.trim(),
-        _id: { $ne: req.params.id } 
-      });
-
-      if (mascotaDuplicada) {
-        return res.status(400).json({ message: "Ya tienes otra mascota registrada con ese nombre" });
-      }
-    }
-
-    const mascota = await Mascota.findByIdAndUpdate(
-      req.params.id, 
-      req.body, 
-      { new: true, runValidators: true }
-    );
+    const mascota = await Mascota.findByIdAndUpdate(req.params.id, updates, { new: true });
 
     if (!mascota) {
       return res.status(404).json({ message: "Mascota no encontrada" });
     }
 
-    res.status(200).json({ message: "Mascota actualizada con éxito", mascota });
+    res.json({ message: "✅ Mascota actualizada", mascota });
   } catch (error) {
-    res.status(400).json({ 
-      message: "Error al actualizar la mascota", 
-      error: error.message 
-    });
+    res.status(500).json({ message: "Error al actualizar mascota", error: error.message });
   }
 };
 
-// Eliminar mascota
+// 📌 Eliminar mascota
 export const eliminarMascota = async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: "El ID de la mascota no es válido" });
-    }
-
     const mascota = await Mascota.findByIdAndDelete(req.params.id);
-
     if (!mascota) {
       return res.status(404).json({ message: "Mascota no encontrada" });
     }
-
-    res.status(200).json({ message: "Mascota eliminada correctamente" });
+    res.json({ message: "🗑️ Mascota eliminada" });
   } catch (error) {
-    res.status(500).json({ 
-      message: "Error al eliminar la mascota", 
-      error: error.message 
-    });
+    res.status(500).json({ message: "Error al eliminar mascota", error: error.message });
   }
 };
