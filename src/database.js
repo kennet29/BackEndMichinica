@@ -6,20 +6,18 @@ import { GridFsStorage } from "multer-gridfs-storage";
 
 let gfs;
 
-// 🔹 Configurar strictQuery para evitar el warning
-mongoose.set("strictQuery", true); // o false si prefieres queries flexibles
+mongoose.set("strictQuery", false);
 
-// Conexión a MongoDB
 try {
   const db = await mongoose.connect(MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
+
   console.log("✅ Database is connected to", db.connection.name);
 
-  // Inicializar GridFS
   gfs = new GridFSBucket(mongoose.connection.db, {
-    bucketName: "uploads", // colecciones -> uploads.files y uploads.chunks
+    bucketName: "uploads", 
   });
 
   console.log("✅ GridFS inicializado con bucket:", "uploads");
@@ -29,14 +27,15 @@ try {
 
 export const getGFS = () => gfs;
 
-// 📂 Configuración de Multer con GridFS
 const storage = new GridFsStorage({
   url: MONGODB_URI,
   options: { useNewUrlParser: true, useUnifiedTopology: true },
   file: (req, file) => {
     if (!file || !file.originalname) {
-      return null; // evita error si no hay archivo
+      console.warn("⚠️ Archivo inválido recibido en multer-gridfs-storage");
+      return null;
     }
+
     return {
       bucketName: "uploads",
       filename: `${Date.now()}-${file.originalname}`,
