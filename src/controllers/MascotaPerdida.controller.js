@@ -21,12 +21,10 @@ export const crearMascotaPerdida = async (req, res) => {
       usuarioId,
     } = req.body;
 
-    // Normalizar valores
     const nombreClean = cleanString(nombre);
     const descripcionClean = cleanString(descripcion);
     const lugarClean = cleanString(lugarPerdida);
 
-    // Contacto (acepta tanto contacto[telefono] como telefono directo)
     const telefono =
       req.body?.contacto?.telefono ||
       req.body["contacto[telefono]"] ||
@@ -36,11 +34,10 @@ export const crearMascotaPerdida = async (req, res) => {
       req.body["contacto[email]"] ||
       req.body.email;
 
-    // 🔹 Validaciones básicas
+    // 🔹 Validaciones
     if (!nombreClean || nombreClean.length < 2)
       return res.status(400).json({ message: "El nombre debe tener al menos 2 caracteres" });
-    if (!especie)
-      return res.status(400).json({ message: "La especie es obligatoria" });
+    if (!especie) return res.status(400).json({ message: "La especie es obligatoria" });
     if (!descripcionClean || descripcionClean.length < 10)
       return res.status(400).json({ message: "La descripción debe tener al menos 10 caracteres" });
     if (!fechaPerdida || isNaN(Date.parse(fechaPerdida)))
@@ -49,11 +46,16 @@ export const crearMascotaPerdida = async (req, res) => {
       return res.status(400).json({ message: "El lugar de pérdida debe tener al menos 2 caracteres" });
     if (!usuarioId || !mongoose.Types.ObjectId.isValid(usuarioId))
       return res.status(400).json({ message: "El usuarioId no es válido" });
-    if (!telefono)
-      return res.status(400).json({ message: "El teléfono es obligatorio" });
+    if (!telefono) return res.status(400).json({ message: "El teléfono es obligatorio" });
 
-    // 📸 Guardar IDs de fotos subidas en GridFS
-    const fotosIds = req.files ? req.files.map((file) => file.id?.toString()) : [];
+    // 📸 Guardar IDs de fotos (soporta id, _id, filename)
+    const fotosIds = req.files
+      ? req.files.map((file) =>
+          file.id?.toString() ||
+          file._id?.toString() ||
+          file.filename
+        )
+      : [];
 
     const mascotaPerdida = new MascotaPerdida({
       nombre: nombreClean,
@@ -96,7 +98,10 @@ export const obtenerMascotaPerdidaPorId = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id))
       return res.status(400).json({ message: "ID no válido" });
 
-    const mascota = await MascotaPerdida.findById(req.params.id).populate("usuarioId", "username email");
+    const mascota = await MascotaPerdida.findById(req.params.id).populate(
+      "usuarioId",
+      "username email"
+    );
     if (!mascota) return res.status(404).json({ message: "Publicación no encontrada" });
 
     res.status(200).json(mascota);
@@ -120,7 +125,13 @@ export const actualizarMascotaPerdida = async (req, res) => {
     if (fechaPerdida && isNaN(Date.parse(fechaPerdida)))
       return res.status(400).json({ message: "La fecha de pérdida no es válida" });
 
-    const nuevasFotos = req.files ? req.files.map((file) => file.id?.toString()) : [];
+    const nuevasFotos = req.files
+      ? req.files.map((file) =>
+          file.id?.toString() ||
+          file._id?.toString() ||
+          file.filename
+        )
+      : [];
     if (nuevasFotos.length > 0) req.body.fotos = nuevasFotos;
 
     const mascota = await MascotaPerdida.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -154,7 +165,9 @@ export const obtenerFoto = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({ message: "ID de imagen no válido" });
 
-    const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: "uploads" });
+    const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+      bucketName: "uploads",
+    });
     const _id = new mongoose.Types.ObjectId(id);
     const downloadStream = bucket.openDownloadStream(_id);
 
