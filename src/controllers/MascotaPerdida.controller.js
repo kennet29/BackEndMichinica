@@ -2,7 +2,8 @@
 import MascotaPerdida from "../models/MascotaPerdida.js";
 import mongoose from "mongoose";
 
-const cleanString = (str = "") => (str ? str.trim() : "");
+import { getGFS } from "../database.js";
+import { Readable } from "stream";
 
 // 📌 Crear publicación
 export const crearMascotaPerdida = async (req, res) => {
@@ -10,77 +11,45 @@ export const crearMascotaPerdida = async (req, res) => {
     console.log("📥 BODY RECIBIDO:", req.body);
     console.log("📷 FILES RECIBIDOS:", req.files);
 
-    const {
-      nombre,
-      especie,
-      raza,
-      sexo,
-      descripcion,
-      fechaPerdida,
-      lugarPerdida,
-      usuarioId,
-    } = req.body;
+    const bucket = getGFS();
+    const fotosIds = [];
 
-    const nombreClean = cleanString(nombre);
-    const descripcionClean = cleanString(descripcion);
-    const lugarClean = cleanString(lugarPerdida);
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const uploadStream = bucket.openUploadStream(file.originalname, {
+          contentType: file.mimetype,
+        });
 
-    const telefono =
-      req.body?.contacto?.telefono ||
-      req.body["contacto[telefono]"] ||
-      req.body.telefono;
-    const email =
-      req.body?.contacto?.email ||
-      req.body["contacto[email]"] ||
-      req.body.email;
+        const readable = new Readable();
+        readable.push(file.buffer);
+        readable.push(null);
+        readable.pipe(uploadStream);
 
-    // 🔹 Validaciones
-    if (!nombreClean || nombreClean.length < 2)
-      return res.status(400).json({ message: "El nombre debe tener al menos 2 caracteres" });
-    if (!especie) return res.status(400).json({ message: "La especie es obligatoria" });
-    if (!descripcionClean || descripcionClean.length < 10)
-      return res.status(400).json({ message: "La descripción debe tener al menos 10 caracteres" });
-    if (!fechaPerdida || isNaN(Date.parse(fechaPerdida)))
-      return res.status(400).json({ message: "La fecha de pérdida no es válida" });
-    if (!lugarClean || lugarClean.length < 2)
-      return res.status(400).json({ message: "El lugar de pérdida debe tener al menos 2 caracteres" });
-    if (!usuarioId || !mongoose.Types.ObjectId.isValid(usuarioId))
-      return res.status(400).json({ message: "El usuarioId no es válido" });
-    if (!telefono) return res.status(400).json({ message: "El teléfono es obligatorio" });
+        await new Promise((resolve, reject) => {
+          uploadStream.on("finish", () => {
+            fotosIds.push(uploadStream.id.toString()); // 👈 ID real de GridFS
+            resolve();
+          });
+          uploadStream.on("error", reject);
+        });
+      }
+    }
 
-    // 📸 Guardar IDs de fotos (soporta id, _id, filename)
-    const fotosIds = req.files
-      ? req.files.map((file) =>
-          file.id?.toString() ||
-          file._id?.toString() ||
-          file.filename
-        )
-      : [];
-
+    // ahora guardas fotosIds en tu modelo MascotaPerdida
     const mascotaPerdida = new MascotaPerdida({
-      nombre: nombreClean,
-      especie,
-      raza: cleanString(raza),
-      sexo,
-      descripcion: descripcionClean,
-      fechaPerdida: new Date(fechaPerdida),
-      lugarPerdida: lugarClean,
-      contacto: { telefono, email },
-      usuarioId,
+      ...req.body,
       fotos: fotosIds,
     });
 
     await mascotaPerdida.save();
 
-    res.status(201).json({
-      message: "✅ Publicación creada con éxito",
-      mascotaPerdida,
-    });
+    res.status(201).json({ message: "✅ Publicación creada con éxito", mascotaPerdida });
   } catch (error) {
     console.error("❌ ERROR CREAR MASCOTA:", error);
     res.status(500).json({ message: "Error al crear publicación", error: error.message });
   }
 };
+
 
 // 📌 Obtener todas
 export const obtenerMascotasPerdidas = async (req, res) => {
