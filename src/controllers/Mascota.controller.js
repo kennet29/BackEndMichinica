@@ -4,6 +4,10 @@ import Mascota from "../models/Mascota.js";
 // 📌 Crear nueva mascota
 export const crearMascota = async (req, res) => {
   try {
+    // 🔍 Logs de depuración
+    console.log("📥 Body recibido:", req.body);
+    console.log("📷 Archivos recibidos:", req.files);
+
     const {
       nombre,
       especie,
@@ -15,28 +19,50 @@ export const crearMascota = async (req, res) => {
       usuarioId,
     } = req.body;
 
+    // 🔹 Validaciones
     if (!nombre || nombre.trim().length < 2) {
-      return res.status(400).json({ message: "El nombre debe tener al menos 2 caracteres." });
+      return res
+        .status(400)
+        .json({ message: "El nombre debe tener al menos 2 caracteres." });
     }
-    if (!especie || !["perro", "gato", "ave", "roedor", "tortuga", "conejo", "otro"].includes(especie)) {
+
+    if (
+      !especie ||
+      !["perro", "gato", "ave", "roedor", "tortuga", "conejo", "otro"].includes(
+        especie
+      )
+    ) {
       return res.status(400).json({ message: "Especie inválida." });
     }
+
     if (tarjetaVeterinaria === undefined) {
-      return res.status(400).json({ message: "Debe indicar si tiene tarjeta veterinaria (true/false)." });
+      return res
+        .status(400)
+        .json({ message: "Debe indicar si tiene tarjeta veterinaria (true/false)." });
     }
+
     if (!sexo || !["macho", "hembra"].includes(sexo)) {
       return res.status(400).json({ message: "Sexo inválido." });
     }
+
     if (!usuarioId) {
       return res.status(400).json({ message: "El usuarioId es obligatorio." });
     }
 
+    // 📷 Manejo de archivos
     let fotoPerfilId = null;
     let fotosIds = [];
 
     if (req.files && req.files.length > 0) {
+      console.log("✅ Fotos detectadas, cantidad:", req.files.length);
+
+      // Primera foto será la de perfil
       fotoPerfilId = req.files[0].id || req.files[0]._id;
+
+      // Todas a la galería
       fotosIds = req.files.map((file) => file.id || file._id);
+    } else {
+      console.log("⚠️ No se recibieron fotos en la petición");
     }
 
     const nuevaMascota = new Mascota({
@@ -54,13 +80,17 @@ export const crearMascota = async (req, res) => {
 
     await nuevaMascota.save();
 
+    console.log("🎉 Mascota guardada en DB:", nuevaMascota);
+
     res.status(201).json({
       message: "✅ Mascota registrada correctamente",
       mascota: nuevaMascota,
     });
   } catch (error) {
     console.error("❌ Error al crear mascota:", error);
-    res.status(500).json({ message: "Error al registrar la mascota", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al registrar la mascota", error: error.message });
   }
 };
 
@@ -68,22 +98,16 @@ export const crearMascota = async (req, res) => {
 export const obtenerMascotas = async (req, res) => {
   try {
     const { usuarioId } = req.params;
-    if (!usuarioId) return res.status(400).json({ message: "Se requiere el usuarioId." });
+    if (!usuarioId)
+      return res.status(400).json({ message: "Se requiere el usuarioId." });
 
-    const mascotas = await Mascota.find({ usuarioId }).lean();
+    const mascotas = await Mascota.find({ usuarioId });
 
-    const mascotasConFotos = mascotas.map((m) => ({
-      ...m,
-      fotoPerfilId: m.fotoPerfilId ? String(m.fotoPerfilId) : null,
-      fotosIds: Array.isArray(m.fotosIds)
-        ? m.fotosIds.map((f) => (f ? String(f) : null)).filter(Boolean)
-        : [],
-    }));
-
-    res.json(mascotasConFotos);
+    res.json(mascotas);
   } catch (error) {
-    console.error("❌ Error en obtenerMascotas:", error);
-    res.status(500).json({ message: "Error al obtener mascotas", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al obtener mascotas", error: error.message });
   }
 };
 
@@ -91,11 +115,13 @@ export const obtenerMascotas = async (req, res) => {
 export const obtenerMascotaPorId = async (req, res) => {
   try {
     const mascota = await Mascota.findById(req.params.id);
-    if (!mascota) return res.status(404).json({ message: "Mascota no encontrada" });
-
+    if (!mascota)
+      return res.status(404).json({ message: "Mascota no encontrada" });
     res.json(mascota);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener mascota", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al obtener mascota", error: error.message });
   }
 };
 
@@ -104,12 +130,24 @@ export const actualizarMascota = async (req, res) => {
   try {
     const updates = req.body;
 
+    console.log("📥 Body actualización:", req.body);
+    console.log("📷 Archivos actualización:", req.files);
+
     if (updates.nombre && updates.nombre.trim().length < 2) {
-      return res.status(400).json({ message: "El nombre debe tener al menos 2 caracteres." });
+      return res
+        .status(400)
+        .json({ message: "El nombre debe tener al menos 2 caracteres." });
     }
-    if (updates.especie && !["perro", "gato", "ave", "roedor", "tortuga", "conejo", "otro"].includes(updates.especie)) {
+
+    if (
+      updates.especie &&
+      !["perro", "gato", "ave", "roedor", "tortuga", "conejo", "otro"].includes(
+        updates.especie
+      )
+    ) {
       return res.status(400).json({ message: "Especie inválida." });
     }
+
     if (updates.sexo && !["macho", "hembra"].includes(updates.sexo)) {
       return res.status(400).json({ message: "Sexo inválido." });
     }
@@ -119,12 +157,17 @@ export const actualizarMascota = async (req, res) => {
       updates.fotosIds = req.files.map((file) => file.id || file._id);
     }
 
-    const mascota = await Mascota.findByIdAndUpdate(req.params.id, updates, { new: true });
-    if (!mascota) return res.status(404).json({ message: "Mascota no encontrada" });
+    const mascota = await Mascota.findByIdAndUpdate(req.params.id, updates, {
+      new: true,
+    });
+    if (!mascota)
+      return res.status(404).json({ message: "Mascota no encontrada" });
 
     res.json({ message: "✅ Mascota actualizada", mascota });
   } catch (error) {
-    res.status(500).json({ message: "Error al actualizar mascota", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al actualizar mascota", error: error.message });
   }
 };
 
@@ -132,19 +175,28 @@ export const actualizarMascota = async (req, res) => {
 export const eliminarMascota = async (req, res) => {
   try {
     const mascota = await Mascota.findByIdAndDelete(req.params.id);
-    if (!mascota) return res.status(404).json({ message: "Mascota no encontrada" });
+    if (!mascota)
+      return res.status(404).json({ message: "Mascota no encontrada" });
 
     res.json({ message: "🗑️ Mascota eliminada" });
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar mascota", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al eliminar mascota", error: error.message });
   }
 };
 
-// 📌 Obtener foto desde GridFS
+// 📌 Obtener foto de mascota desde GridFS
 export const obtenerFotoMascota = async (req, res) => {
   try {
     const gfs = req.app.get("gfs");
-    const file = await gfs.find({ _id: new mongoose.Types.ObjectId(req.params.id) }).toArray();
+    if (!gfs) {
+      return res.status(500).json({ message: "GridFS no está inicializado" });
+    }
+
+    const file = await gfs
+      .find({ _id: new mongoose.Types.ObjectId(req.params.id) })
+      .toArray();
 
     if (!file || file.length === 0) {
       return res.status(404).json({ message: "Archivo no encontrado" });
@@ -155,6 +207,8 @@ export const obtenerFotoMascota = async (req, res) => {
     readStream.pipe(res);
   } catch (error) {
     console.error("❌ Error al obtener foto:", error);
-    res.status(500).json({ message: "Error al obtener foto", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al obtener foto", error: error.message });
   }
 };
