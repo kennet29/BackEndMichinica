@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Mascota from "../models/Mascota.js";
 
 // 📌 Crear nueva mascota
@@ -20,7 +21,7 @@ export const crearMascota = async (req, res) => {
     }
 
     if (!especie || !["perro", "gato", "ave", "roedor", "tortuga", "conejo", "otro"].includes(especie)) {
-      return res.status(400).json({ message: "Especie inválida. Opciones: perro, gato, ave, roedor, tortuga, conejo, otro." });
+      return res.status(400).json({ message: "Especie inválida." });
     }
 
     if (tarjetaVeterinaria === undefined) {
@@ -28,7 +29,7 @@ export const crearMascota = async (req, res) => {
     }
 
     if (!sexo || !["macho", "hembra"].includes(sexo)) {
-      return res.status(400).json({ message: "Sexo inválido. Opciones: macho o hembra." });
+      return res.status(400).json({ message: "Sexo inválido." });
     }
 
     if (!usuarioId) {
@@ -40,10 +41,7 @@ export const crearMascota = async (req, res) => {
     let fotosIds = [];
 
     if (req.files && req.files.length > 0) {
-      // Primera foto será la de perfil
-      fotoPerfilId = req.files[0].id || req.files[0]._id;
-
-      // Todas a la galería
+      fotoPerfilId = req.files[0].id || req.files[0]._id; // primera foto = perfil
       fotosIds = req.files.map((file) => file.id || file._id);
     }
 
@@ -68,10 +66,7 @@ export const crearMascota = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error al crear mascota:", error);
-    res.status(500).json({
-      message: "Error al registrar la mascota",
-      error: error.message,
-    });
+    res.status(500).json({ message: "Error al registrar la mascota", error: error.message });
   }
 };
 
@@ -79,13 +74,9 @@ export const crearMascota = async (req, res) => {
 export const obtenerMascotas = async (req, res) => {
   try {
     const { usuarioId } = req.params;
-
-    if (!usuarioId) {
-      return res.status(400).json({ message: "Se requiere el usuarioId." });
-    }
+    if (!usuarioId) return res.status(400).json({ message: "Se requiere el usuarioId." });
 
     const mascotas = await Mascota.find({ usuarioId });
-
     res.json(mascotas);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener mascotas", error: error.message });
@@ -108,7 +99,6 @@ export const actualizarMascota = async (req, res) => {
   try {
     const updates = req.body;
 
-    // 🔹 Validaciones básicas
     if (updates.nombre && updates.nombre.trim().length < 2) {
       return res.status(400).json({ message: "El nombre debe tener al menos 2 caracteres." });
     }
@@ -121,17 +111,13 @@ export const actualizarMascota = async (req, res) => {
       return res.status(400).json({ message: "Sexo inválido." });
     }
 
-    // 📷 Si vienen nuevas fotos, reemplazamos
     if (req.files && req.files.length > 0) {
       updates.fotoPerfilId = req.files[0].id || req.files[0]._id;
       updates.fotosIds = req.files.map((file) => file.id || file._id);
     }
 
     const mascota = await Mascota.findByIdAndUpdate(req.params.id, updates, { new: true });
-
-    if (!mascota) {
-      return res.status(404).json({ message: "Mascota no encontrada" });
-    }
+    if (!mascota) return res.status(404).json({ message: "Mascota no encontrada" });
 
     res.json({ message: "✅ Mascota actualizada", mascota });
   } catch (error) {
@@ -143,11 +129,31 @@ export const actualizarMascota = async (req, res) => {
 export const eliminarMascota = async (req, res) => {
   try {
     const mascota = await Mascota.findByIdAndDelete(req.params.id);
-    if (!mascota) {
-      return res.status(404).json({ message: "Mascota no encontrada" });
-    }
+    if (!mascota) return res.status(404).json({ message: "Mascota no encontrada" });
+
     res.json({ message: "🗑️ Mascota eliminada" });
   } catch (error) {
     res.status(500).json({ message: "Error al eliminar mascota", error: error.message });
+  }
+};
+
+// 📌 Obtener foto de mascota desde GridFS
+export const obtenerFotoMascota = async (req, res) => {
+  try {
+    const gfs = req.app.get("gfs"); // gfs lo configuras en database.js
+    const file = await gfs.find({ _id: new mongoose.Types.ObjectId(req.params.id) }).toArray();
+
+    if (!file || file.length === 0) {
+      return res.status(404).json({ message: "Archivo no encontrado" });
+    }
+
+    // Configurar headers según el tipo de archivo
+    res.set("Content-Type", file[0].contentType);
+
+    const readStream = gfs.openDownloadStream(file[0]._id);
+    readStream.pipe(res);
+  } catch (error) {
+    console.error("❌ Error al obtener foto:", error);
+    res.status(500).json({ message: "Error al obtener foto", error: error.message });
   }
 };

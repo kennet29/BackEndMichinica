@@ -1,11 +1,12 @@
 import express from "express";
-import { upload } from "../database.js"; // tu config de multer-gridfs
+import { upload } from "../database.js"; // ⚡ tu config de multer-gridfs
 import {
   crearMascota,
   obtenerMascotas,
   obtenerMascotaPorId,
   actualizarMascota,
   eliminarMascota,
+  obtenerFotoMascota, // 🆕 importar el controlador de fotos
 } from "../controllers/Mascota.controller.js";
 
 const router = express.Router();
@@ -19,7 +20,10 @@ router.get("/usuario/:usuarioId", obtenerMascotas);
 // 📌 Obtener una mascota por ID
 router.get("/:id", obtenerMascotaPorId);
 
-// 📌 Actualizar mascota
+// 📌 Obtener foto de mascota por ID desde GridFS
+router.get("/foto/:id", obtenerFotoMascota);
+
+// 📌 Actualizar mascota (permite reemplazar hasta 5 fotos)
 router.put("/:id", upload.array("fotos", 5), actualizarMascota);
 
 // 📌 Eliminar mascota
