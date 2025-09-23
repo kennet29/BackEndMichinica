@@ -6,7 +6,7 @@ import {
   obtenerMascotaPorId,
   actualizarMascota,
   eliminarMascota,
-  obtenerFotoMascota, // 🆕 importar el controlador de fotos
+  obtenerFotoMascota, 
 } from "../controllers/Mascota.controller.js";
 
 const router = express.Router();
@@ -17,11 +17,12 @@ router.post("/", upload.array("fotos", 5), crearMascota);
 // 📌 Obtener todas las mascotas de un usuario
 router.get("/usuario/:usuarioId", obtenerMascotas);
 
+// 📌 Obtener foto de mascota por ID desde GridFS
+// ⚠️ Va antes de /:id para que no entre en conflicto
+router.get("/foto/:id", obtenerFotoMascota);
+
 // 📌 Obtener una mascota por ID
 router.get("/:id", obtenerMascotaPorId);
-
-// 📌 Obtener foto de mascota por ID desde GridFS
-router.get("/foto/:id", obtenerFotoMascota);
 
 // 📌 Actualizar mascota (permite reemplazar hasta 5 fotos)
 router.put("/:id", upload.array("fotos", 5), actualizarMascota);
