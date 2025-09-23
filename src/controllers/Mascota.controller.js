@@ -19,19 +19,15 @@ export const crearMascota = async (req, res) => {
     if (!nombre || nombre.trim().length < 2) {
       return res.status(400).json({ message: "El nombre debe tener al menos 2 caracteres." });
     }
-
     if (!especie || !["perro", "gato", "ave", "roedor", "tortuga", "conejo", "otro"].includes(especie)) {
       return res.status(400).json({ message: "Especie inválida." });
     }
-
     if (tarjetaVeterinaria === undefined) {
       return res.status(400).json({ message: "Debe indicar si tiene tarjeta veterinaria (true/false)." });
     }
-
     if (!sexo || !["macho", "hembra"].includes(sexo)) {
       return res.status(400).json({ message: "Sexo inválido." });
     }
-
     if (!usuarioId) {
       return res.status(400).json({ message: "El usuarioId es obligatorio." });
     }
@@ -39,7 +35,6 @@ export const crearMascota = async (req, res) => {
     // 📷 Manejo de archivos
     let fotoPerfilId = null;
     let fotosIds = [];
-
     if (req.files && req.files.length > 0) {
       fotoPerfilId = req.files[0].id || req.files[0]._id; // primera foto = perfil
       fotosIds = req.files.map((file) => file.id || file._id);
@@ -76,8 +71,16 @@ export const obtenerMascotas = async (req, res) => {
     const { usuarioId } = req.params;
     if (!usuarioId) return res.status(400).json({ message: "Se requiere el usuarioId." });
 
-    const mascotas = await Mascota.find({ usuarioId });
-    res.json(mascotas);
+    const mascotas = await Mascota.find({ usuarioId }).lean();
+
+    // 🔹 Convertir ObjectId → string
+    const mascotasConFotos = mascotas.map((m) => ({
+      ...m,
+      fotoPerfilId: m.fotoPerfilId ? m.fotoPerfilId.toString() : null,
+      fotosIds: m.fotosIds ? m.fotosIds.map((f) => f.toString()) : [],
+    }));
+
+    res.json(mascotasConFotos);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener mascotas", error: error.message });
   }
@@ -88,6 +91,7 @@ export const obtenerMascotaPorId = async (req, res) => {
   try {
     const mascota = await Mascota.findById(req.params.id);
     if (!mascota) return res.status(404).json({ message: "Mascota no encontrada" });
+
     res.json(mascota);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener mascota", error: error.message });
@@ -99,18 +103,18 @@ export const actualizarMascota = async (req, res) => {
   try {
     const updates = req.body;
 
+    // 🔹 Validaciones básicas
     if (updates.nombre && updates.nombre.trim().length < 2) {
       return res.status(400).json({ message: "El nombre debe tener al menos 2 caracteres." });
     }
-
     if (updates.especie && !["perro", "gato", "ave", "roedor", "tortuga", "conejo", "otro"].includes(updates.especie)) {
       return res.status(400).json({ message: "Especie inválida." });
     }
-
     if (updates.sexo && !["macho", "hembra"].includes(updates.sexo)) {
       return res.status(400).json({ message: "Sexo inválido." });
     }
 
+    // 📷 Si vienen nuevas fotos, reemplazamos
     if (req.files && req.files.length > 0) {
       updates.fotoPerfilId = req.files[0].id || req.files[0]._id;
       updates.fotosIds = req.files.map((file) => file.id || file._id);
@@ -137,19 +141,17 @@ export const eliminarMascota = async (req, res) => {
   }
 };
 
-// 📌 Obtener foto de mascota desde GridFS
+// 📌 Obtener foto desde GridFS
 export const obtenerFotoMascota = async (req, res) => {
   try {
-    const gfs = req.app.get("gfs"); // gfs lo configuras en database.js
+    const gfs = req.app.get("gfs");
     const file = await gfs.find({ _id: new mongoose.Types.ObjectId(req.params.id) }).toArray();
 
     if (!file || file.length === 0) {
       return res.status(404).json({ message: "Archivo no encontrado" });
     }
 
-    // Configurar headers según el tipo de archivo
     res.set("Content-Type", file[0].contentType);
-
     const readStream = gfs.openDownloadStream(file[0]._id);
     readStream.pipe(res);
   } catch (error) {
