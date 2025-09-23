@@ -15,7 +15,6 @@ export const crearMascota = async (req, res) => {
       usuarioId,
     } = req.body;
 
-    // 🔹 Validaciones
     if (!nombre || nombre.trim().length < 2) {
       return res.status(400).json({ message: "El nombre debe tener al menos 2 caracteres." });
     }
@@ -32,11 +31,11 @@ export const crearMascota = async (req, res) => {
       return res.status(400).json({ message: "El usuarioId es obligatorio." });
     }
 
-    // 📷 Manejo de archivos
     let fotoPerfilId = null;
     let fotosIds = [];
+
     if (req.files && req.files.length > 0) {
-      fotoPerfilId = req.files[0].id || req.files[0]._id; // primera foto = perfil
+      fotoPerfilId = req.files[0].id || req.files[0]._id;
       fotosIds = req.files.map((file) => file.id || file._id);
     }
 
@@ -73,15 +72,17 @@ export const obtenerMascotas = async (req, res) => {
 
     const mascotas = await Mascota.find({ usuarioId }).lean();
 
-    // 🔹 Convertir ObjectId → string
     const mascotasConFotos = mascotas.map((m) => ({
       ...m,
-      fotoPerfilId: m.fotoPerfilId ? m.fotoPerfilId.toString() : null,
-      fotosIds: m.fotosIds ? m.fotosIds.map((f) => f.toString()) : [],
+      fotoPerfilId: m.fotoPerfilId ? String(m.fotoPerfilId) : null,
+      fotosIds: Array.isArray(m.fotosIds)
+        ? m.fotosIds.map((f) => (f ? String(f) : null)).filter(Boolean)
+        : [],
     }));
 
     res.json(mascotasConFotos);
   } catch (error) {
+    console.error("❌ Error en obtenerMascotas:", error);
     res.status(500).json({ message: "Error al obtener mascotas", error: error.message });
   }
 };
@@ -103,7 +104,6 @@ export const actualizarMascota = async (req, res) => {
   try {
     const updates = req.body;
 
-    // 🔹 Validaciones básicas
     if (updates.nombre && updates.nombre.trim().length < 2) {
       return res.status(400).json({ message: "El nombre debe tener al menos 2 caracteres." });
     }
@@ -114,7 +114,6 @@ export const actualizarMascota = async (req, res) => {
       return res.status(400).json({ message: "Sexo inválido." });
     }
 
-    // 📷 Si vienen nuevas fotos, reemplazamos
     if (req.files && req.files.length > 0) {
       updates.fotoPerfilId = req.files[0].id || req.files[0]._id;
       updates.fotosIds = req.files.map((file) => file.id || file._id);
