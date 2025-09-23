@@ -1,13 +1,10 @@
 import mongoose from "mongoose";
 import Mascota from "../models/Mascota.js";
+import { getGFS } from "../database.js";
 
 // 📌 Crear nueva mascota
 export const crearMascota = async (req, res) => {
   try {
-    // 🔍 Logs de depuración
-    console.log("📥 Body recibido:", req.body);
-    console.log("📷 Archivos recibidos:", req.files);
-
     const {
       nombre,
       especie,
@@ -18,6 +15,9 @@ export const crearMascota = async (req, res) => {
       descripcion,
       usuarioId,
     } = req.body;
+
+    console.log("📥 Body recibido:", req.body);
+    console.log("📷 Archivos recibidos:", req.files);
 
     // 🔹 Validaciones
     if (!nombre || nombre.trim().length < 2) {
@@ -42,33 +42,33 @@ export const crearMascota = async (req, res) => {
     }
 
     if (!sexo || !["macho", "hembra"].includes(sexo)) {
-      return res.status(400).json({ message: "Sexo inválido." });
+      return res
+        .status(400)
+        .json({ message: "Sexo inválido. Opciones: macho o hembra." });
     }
 
     if (!usuarioId) {
       return res.status(400).json({ message: "El usuarioId es obligatorio." });
     }
 
-    // 📷 Manejo de archivos
+    // 📷 Manejo de archivos en GridFS
     let fotoPerfilId = null;
     let fotosIds = [];
 
     if (req.files && req.files.length > 0) {
       console.log("✅ Fotos detectadas, cantidad:", req.files.length);
 
-      // Primera foto será la de perfil
-      fotoPerfilId = req.files[0].id || req.files[0]._id;
+      // Primera foto = perfil
+      fotoPerfilId = req.files[0]._id;
 
-      // Todas a la galería
-      fotosIds = req.files.map((file) => file.id || file._id);
-    } else {
-      console.log("⚠️ No se recibieron fotos en la petición");
+      // Todas las fotos a la galería
+      fotosIds = req.files.map((file) => file._id);
     }
 
     const nuevaMascota = new Mascota({
       nombre: nombre.trim(),
       especie,
-      tarjetaVeterinaria,
+      tarjetaVeterinaria: tarjetaVeterinaria === "true" || tarjetaVeterinaria === true,
       raza: raza?.trim(),
       cumpleaños: cumpleaños ? new Date(cumpleaños) : null,
       sexo,
@@ -102,6 +102,7 @@ export const obtenerMascotas = async (req, res) => {
       return res.status(400).json({ message: "Se requiere el usuarioId." });
 
     const mascotas = await Mascota.find({ usuarioId });
+    console.log("🐶 Mascotas encontradas:", mascotas.length);
 
     res.json(mascotas);
   } catch (error) {
@@ -130,9 +131,6 @@ export const actualizarMascota = async (req, res) => {
   try {
     const updates = req.body;
 
-    console.log("📥 Body actualización:", req.body);
-    console.log("📷 Archivos actualización:", req.files);
-
     if (updates.nombre && updates.nombre.trim().length < 2) {
       return res
         .status(400)
@@ -153,8 +151,8 @@ export const actualizarMascota = async (req, res) => {
     }
 
     if (req.files && req.files.length > 0) {
-      updates.fotoPerfilId = req.files[0].id || req.files[0]._id;
-      updates.fotosIds = req.files.map((file) => file.id || file._id);
+      updates.fotoPerfilId = req.files[0]._id;
+      updates.fotosIds = req.files.map((file) => file._id);
     }
 
     const mascota = await Mascota.findByIdAndUpdate(req.params.id, updates, {
@@ -186,24 +184,21 @@ export const eliminarMascota = async (req, res) => {
   }
 };
 
-// 📌 Obtener foto de mascota desde GridFS
+// 📌 Obtener foto desde GridFS
 export const obtenerFotoMascota = async (req, res) => {
   try {
-    const gfs = req.app.get("gfs");
-    if (!gfs) {
-      return res.status(500).json({ message: "GridFS no está inicializado" });
-    }
+    const gfs = getGFS();
+    if (!gfs) return res.status(500).json({ message: "GridFS no inicializado" });
 
-    const file = await gfs
-      .find({ _id: new mongoose.Types.ObjectId(req.params.id) })
-      .toArray();
+    const fileId = new mongoose.Types.ObjectId(req.params.id);
 
-    if (!file || file.length === 0) {
+    const files = await gfs.find({ _id: fileId }).toArray();
+    if (!files || files.length === 0) {
       return res.status(404).json({ message: "Archivo no encontrado" });
     }
 
-    res.set("Content-Type", file[0].contentType);
-    const readStream = gfs.openDownloadStream(file[0]._id);
+    res.set("Content-Type", files[0].contentType);
+    const readStream = gfs.openDownloadStream(fileId);
     readStream.pipe(res);
   } catch (error) {
     console.error("❌ Error al obtener foto:", error);
