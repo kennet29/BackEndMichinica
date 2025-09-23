@@ -3,7 +3,9 @@ import Mascota from "../models/Mascota.js";
 import { getGFS } from "../database.js";
 import { Readable } from "stream";
 
+// ============================
 // 📌 Crear nueva mascota
+// ============================
 export const crearMascota = async (req, res) => {
   try {
     console.log("📥 BODY RECIBIDO:", req.body);
@@ -20,7 +22,6 @@ export const crearMascota = async (req, res) => {
       usuarioId,
     } = req.body;
 
-    // 🔹 Validaciones
     if (!nombre || nombre.trim().length < 2) {
       return res.status(400).json({ message: "El nombre debe tener al menos 2 caracteres." });
     }
@@ -41,7 +42,6 @@ export const crearMascota = async (req, res) => {
     const fotosIds = [];
     let fotoPerfilId = null;
 
-    // 📷 Guardar fotos en GridFS manualmente
     if (req.files && req.files.length > 0) {
       for (const [index, file] of req.files.entries()) {
         const uploadStream = bucket.openUploadStream(file.originalname, {
@@ -57,7 +57,7 @@ export const crearMascota = async (req, res) => {
           uploadStream.on("finish", () => {
             const id = uploadStream.id.toString();
             fotosIds.push(id);
-            if (index === 0) fotoPerfilId = id; // primera = perfil
+            if (index === 0) fotoPerfilId = id;
             resolve();
           });
           uploadStream.on("error", reject);
@@ -79,7 +79,6 @@ export const crearMascota = async (req, res) => {
     });
 
     await nuevaMascota.save();
-
     console.log("🎉 Mascota guardada en DB:", nuevaMascota);
 
     res.status(201).json({ message: "✅ Mascota registrada correctamente", mascota: nuevaMascota });
@@ -89,7 +88,9 @@ export const crearMascota = async (req, res) => {
   }
 };
 
+// ============================
 // 📌 Obtener todas las mascotas de un usuario
+// ============================
 export const obtenerMascotas = async (req, res) => {
   try {
     const { usuarioId } = req.params;
@@ -102,40 +103,41 @@ export const obtenerMascotas = async (req, res) => {
   }
 };
 
+// ============================
 // 📌 Obtener mascota por ID
+// ============================
 export const obtenerMascotaPorId = async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id))
-      return res.status(400).json({ message: "ID no válido" });
-
     const mascota = await Mascota.findById(req.params.id);
     if (!mascota) return res.status(404).json({ message: "Mascota no encontrada" });
-
     res.json(mascota);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener mascota", error: error.message });
   }
 };
 
+// ============================
 // 📌 Actualizar mascota
+// ============================
 export const actualizarMascota = async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id))
-      return res.status(400).json({ message: "ID no válido" });
-
     const updates = req.body;
 
-    if (updates.nombre && updates.nombre.trim().length < 2)
+    if (updates.nombre && updates.nombre.trim().length < 2) {
       return res.status(400).json({ message: "El nombre debe tener al menos 2 caracteres." });
-    if (updates.especie && !["perro", "gato", "ave", "roedor", "tortuga", "conejo", "otro"].includes(updates.especie))
+    }
+    if (updates.especie && !["perro", "gato", "ave", "roedor", "tortuga", "conejo", "otro"].includes(updates.especie)) {
       return res.status(400).json({ message: "Especie inválida." });
-    if (updates.sexo && !["macho", "hembra"].includes(updates.sexo))
+    }
+    if (updates.sexo && !["macho", "hembra"].includes(updates.sexo)) {
       return res.status(400).json({ message: "Sexo inválido." });
+    }
 
     const bucket = getGFS();
-    const nuevasFotos = [];
-
     if (req.files && req.files.length > 0) {
+      const fotosIds = [];
+      let fotoPerfilId = null;
+
       for (const [index, file] of req.files.entries()) {
         const uploadStream = bucket.openUploadStream(file.originalname, {
           contentType: file.mimetype,
@@ -149,15 +151,16 @@ export const actualizarMascota = async (req, res) => {
         await new Promise((resolve, reject) => {
           uploadStream.on("finish", () => {
             const id = uploadStream.id.toString();
-            nuevasFotos.push(id);
-            if (index === 0) updates.fotoPerfilId = id;
+            fotosIds.push(id);
+            if (index === 0) fotoPerfilId = id;
             resolve();
           });
           uploadStream.on("error", reject);
         });
       }
 
-      updates.fotosIds = nuevasFotos;
+      updates.fotoPerfilId = fotoPerfilId;
+      updates.fotosIds = fotosIds;
     }
 
     const mascota = await Mascota.findByIdAndUpdate(req.params.id, updates, { new: true });
@@ -169,12 +172,11 @@ export const actualizarMascota = async (req, res) => {
   }
 };
 
+// ============================
 // 📌 Eliminar mascota
+// ============================
 export const eliminarMascota = async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id))
-      return res.status(400).json({ message: "ID no válido" });
-
     const mascota = await Mascota.findByIdAndDelete(req.params.id);
     if (!mascota) return res.status(404).json({ message: "Mascota no encontrada" });
 
@@ -184,23 +186,20 @@ export const eliminarMascota = async (req, res) => {
   }
 };
 
+// ============================
 // 📌 Obtener foto desde GridFS
+// ============================
 export const obtenerFotoMascota = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({ message: "ID de imagen no válido" });
 
-    const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-      bucketName: "uploads",
-    });
-
+    const bucket = getGFS();
     const _id = new mongoose.Types.ObjectId(id);
     const downloadStream = bucket.openDownloadStream(_id);
 
-    downloadStream.on("error", () =>
-      res.status(404).json({ message: "Imagen no encontrada" })
-    );
+    downloadStream.on("error", () => res.status(404).json({ message: "Imagen no encontrada" }));
 
     res.set("Content-Type", "image/jpeg");
     downloadStream.pipe(res);
