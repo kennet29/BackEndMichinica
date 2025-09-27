@@ -6,7 +6,7 @@ import {
   unirseEvento,
   salirEvento,
   obtenerEventoPorId,
-} from "../controllers/Evento.controller.js"; // 👈 asegúrate que el archivo exista exactamente con ese nombre
+} from "../controllers/Eventos.controller.js"; // 👈 asegúrate que el archivo exista exactamente con ese nombre
 
 const router = express.Router();
 
