@@ -98,12 +98,33 @@ export const obtenerMascotaPerdidaPorId = async (req, res) => {
   }
 };
 
-// 📌 Actualizar
 export const actualizarMascotaPerdida = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id))
       return res.status(400).json({ message: "ID no válido" });
 
+    const mascota = await MascotaPerdida.findById(req.params.id);
+    if (!mascota) return res.status(404).json({ message: "Publicación no encontrada" });
+
+    const userId = req.userId; // 👈 esto lo inyecta tu middleware de auth
+
+    // ⚡ Caso especial: quieren actualizar "encontrada"
+    if (req.body.encontrada === true) {
+      if (mascota.usuarioId.toString() !== userId) {
+        // 🚫 No es el dueño → crear notificación
+        await Notificacion.create({
+          usuarioId: mascota.usuarioId, // el dueño recibe la notificación
+          mascotaId: mascota._id,
+          mensaje: `⚠️ Otro usuario intentó marcar a ${mascota.nombre} como encontrada.`,
+        });
+
+        return res.status(403).json({
+          message: "🚫 No puedes marcar esta mascota como encontrada. Se notificó al dueño.",
+        });
+      }
+    }
+
+    // ✅ Validaciones de texto (nombre, descripcion, fecha, etc.)
     const { nombre, descripcion, fechaPerdida } = req.body;
 
     if (nombre && nombre.trim().length < 2)
@@ -113,19 +134,28 @@ export const actualizarMascotaPerdida = async (req, res) => {
     if (fechaPerdida && isNaN(Date.parse(fechaPerdida)))
       return res.status(400).json({ message: "La fecha de pérdida no es válida" });
 
+    // ⚡ Si vienen fotos nuevas
     const nuevasFotos = req.files
-      ? req.files.map((file) =>
-          file.id?.toString() ||
-          file._id?.toString() ||
-          file.filename
+      ? req.files.map(
+          (file) =>
+            file.id?.toString() ||
+            file._id?.toString() ||
+            file.filename
         )
       : [];
     if (nuevasFotos.length > 0) req.body.fotos = nuevasFotos;
 
-    const mascota = await MascotaPerdida.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!mascota) return res.status(404).json({ message: "Publicación no encontrada" });
+    // 👉 Finalmente, actualizar
+    const mascotaActualizada = await MascotaPerdida.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
 
-    res.status(200).json({ message: "✅ Publicación actualizada con éxito", mascota });
+    res.status(200).json({
+      message: "✅ Publicación actualizada con éxito",
+      mascota: mascotaActualizada,
+    });
   } catch (error) {
     res.status(500).json({ message: "Error al actualizar publicación", error: error.message });
   }
