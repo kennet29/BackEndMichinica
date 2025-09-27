@@ -11,7 +11,7 @@ import DesparacitacionRoutes from "./routes/Desparacitcion.routes.js";
 import MascotasRoutes from "./routes/Mascota.routes.js"
 import MascotaperdidasRoutes from "./routes/MascotaPerdida.routes.js"
 import AdopcionRoutes from "./routes/Adopcion.routes.js";
-//import EventoRoutes from "./routes/eventos.routes.js";
+import EventoRoutes from "./routes/Eventos.routes.js";
 import PublicacionRoutes from "./routes/publicacion.routes.js";
 import VacunasRoutes from "./routes/vacunas.routes.js";
 import EnfermedadCronicaRoutes from "./routes/enfermedadcronica.routes.js";
@@ -51,7 +51,7 @@ app.use("/api/mascotas",MascotasRoutes);
 app.use("/api/mascotasPerdidas",MascotaperdidasRoutes);
 app.use("/api/adopciones",AdopcionRoutes);
 app.use("/api/publicaciones",PublicacionRoutes);
-//app.use("/api/eventos",EventoRoutes);
+app.use("/api/eventos",EventoRoutes);
 app.use("/api/notificaciones",NotificacionRoutes);
 app.use("/api/desparacitaciones",DesparacitacionRoutes);
 app.use("/api/vacunas",VacunasRoutes);
