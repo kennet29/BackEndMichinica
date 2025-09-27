@@ -6,6 +6,7 @@ import { getGFS } from "../database.js";
 import { Readable } from "stream";
 
 // 📌 Crear publicación
+// 📌 Crear publicación
 export const crearMascotaPerdida = async (req, res) => {
   try {
     console.log("📥 BODY RECIBIDO:", req.body);
@@ -27,7 +28,7 @@ export const crearMascotaPerdida = async (req, res) => {
 
         await new Promise((resolve, reject) => {
           uploadStream.on("finish", () => {
-            fotosIds.push(uploadStream.id.toString()); // 👈 ID real de GridFS
+            fotosIds.push(uploadStream.id.toString()); 
             resolve();
           });
           uploadStream.on("error", reject);
@@ -35,18 +36,36 @@ export const crearMascotaPerdida = async (req, res) => {
       }
     }
 
-    // ahora guardas fotosIds en tu modelo MascotaPerdida
+    // ⚡ Asegurar que contacto siempre se guarde bien
     const mascotaPerdida = new MascotaPerdida({
-      ...req.body,
+      nombre: req.body.nombre,
+      especie: req.body.especie,
+      raza: req.body.raza,
+      sexo: req.body.sexo,
+      descripcion: req.body.descripcion,
       fotos: fotosIds,
+      fechaPerdida: req.body.fechaPerdida,
+      lugarPerdida: req.body.lugarPerdida,
+      contacto: {
+        telefono: req.body.telefono, // 👈 siempre lo metemos dentro de contacto
+        email: req.body.email,       // 👈 lo mismo aquí
+      },
+      estado: req.body.estado,
+      usuarioId: req.body.usuarioId,
     });
 
     await mascotaPerdida.save();
 
-    res.status(201).json({ message: "✅ Publicación creada con éxito", mascotaPerdida });
+    res.status(201).json({ 
+      message: "✅ Publicación creada con éxito", 
+      mascotaPerdida 
+    });
   } catch (error) {
     console.error("❌ ERROR CREAR MASCOTA:", error);
-    res.status(500).json({ message: "Error al crear publicación", error: error.message });
+    res.status(500).json({ 
+      message: "Error al crear publicación", 
+      error: error.message 
+    });
   }
 };
 
