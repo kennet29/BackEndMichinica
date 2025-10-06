@@ -170,3 +170,27 @@ export const salirEvento = async (req, res) => {
     res.status(400).json({ message: "Error al salir del evento", error: error.message });
   }
 };
+
+
+// Obtener solo eventos activos 
+export const obtenerEventosActivos = async (req, res) => {
+  try {
+    const ahora = new Date();
+
+    const eventos = await Evento.find({
+      fechaFin: { $gte: ahora },      // todavía no han terminado
+      estado: { $ne: "finalizado" }   // opcional: excluir finalizados manualmente
+    })
+      .populate("organizadorId", "nombre email")
+      .populate("participantes", "nombre email");
+
+    const eventosConCantidad = eventos.map(e => ({
+      ...e.toObject(),
+      cantidadParticipantes: e.participantes.length
+    }));
+
+    res.status(200).json({ eventos: eventosConCantidad });
+  } catch (error) {
+    res.status(400).json({ message: "Error al obtener eventos activos", error: error.message });
+  }
+};

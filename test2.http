@@ -1,12 +1,11 @@
-curl -X POST http://localhost:4000/api/mascotas \
--H "Content-Type: application/json" \
--d '{
-  "nombre": "Pelusa",
-  "especie": "conejo",
-  "edad": 1,
-  "usuarioId": "68c6f6510c0a40556d6ada5d",
-  "tarjetaVeterinaria": false,
-  "sexo": "hembra",
-  "descripcion": "Conejita blanca muy juguetona"
-}
-'
+curl -X POST https://backendmaguey.onrender.com/api/eventos \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Festival de Mascotas Octubre",
+    "descripcion": "Un evento especial durante todo el mes de octubre para amantes de los animales.",
+    "fechaInicio": "2025-10-01T00:00:00.000Z",
+    "fechaFin": "2025-10-31T23:59:59.000Z",
+    "estado": "activo",
+    "ubicacion": "Parque Central Managua",
+    "organizadorId": "651234abcd5678ef90123456"
+  }'

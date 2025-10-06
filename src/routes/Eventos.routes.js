@@ -6,15 +6,17 @@ import {
   unirseEvento,
   salirEvento,
   obtenerEventoPorId,
-} from "../controllers/Eventos.controller.js"; // 👈 asegúrate que el archivo exista exactamente con ese nombre
+  obtenerEventosActivos,
+} from "../controllers/Eventos.controller.js";
 
 const router = express.Router();
 
 router.post("/", crearEvento);
 router.get("/", obtenerEventos);
+router.get("/activos", obtenerEventosActivos);  // 👈 nueva ruta
 router.put("/:id", actualizarEvento);
 router.post("/:id/unirse", unirseEvento);
 router.post("/:id/salir", salirEvento);
-router.get("/:id", obtenerEventoPorId); // quité la "/" extra al final
+router.get("/:id", obtenerEventoPorId);
 
 export default router;
