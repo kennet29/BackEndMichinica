@@ -1,6 +1,6 @@
 import cron from "node-cron";
 import Vacuna from "../models/Vacuna.js";
-import Desparasitacion from "../models/Desparasitacion.js";
+import Desparasitacion from "../models/Desparacitacion.js";
 import Notificacion from "../models/Notificaciones.js";
 
 cron.schedule("0 9 * * *", async () => {
