@@ -7,12 +7,9 @@ cron.schedule("0 9 * * *", async () => {
   console.log("⏰ Iniciando revisión diaria de vacunas y desparasitaciones...");
 
   const hoy = new Date();
-  const diasNotificacion = [7, 3, 1, 0]; // Días antes del evento para avisar
+  const diasNotificacion = [7, 3, 1, 0]; 
 
   try {
-    /* =========================================================
-       🧩 REVISAR VACUNAS PRÓXIMAS O ATRASADAS
-    ========================================================= */
     const vacunas = await Vacuna.find({ proximaDosis: { $ne: null } })
       .populate("mascotaId", "nombre usuarioId");
 
@@ -23,7 +20,6 @@ cron.schedule("0 9 * * *", async () => {
         (v.proximaDosis - hoy) / (1000 * 60 * 60 * 24)
       );
 
-      // 🔸 Avisos previos
       if (diasNotificacion.includes(diffDias)) {
         const mensaje =
           diffDias === 0
@@ -46,7 +42,6 @@ cron.schedule("0 9 * * *", async () => {
         }
       }
 
-      // 🔸 Avisos por retraso (hasta 3 días después)
       if (diffDias < 0 && diffDias >= -3) {
         const diasPasados = Math.abs(diffDias);
         const mensaje = `⚠️ La vacuna ${v.nombre} de ${v.mascotaId.nombre} está atrasada desde hace ${diasPasados} día(s).`;
@@ -68,9 +63,6 @@ cron.schedule("0 9 * * *", async () => {
       }
     }
 
-    /* =========================================================
-       🧩 REVISAR DESPARASITACIONES PRÓXIMAS O ATRASADAS
-    ========================================================= */
     const desparasitaciones = await Desparasitacion.find({
       proxima: { $ne: null },
     }).populate("mascotaId", "nombre usuarioId");
@@ -82,7 +74,6 @@ cron.schedule("0 9 * * *", async () => {
         (d.proxima - hoy) / (1000 * 60 * 60 * 24)
       );
 
-      // 🔸 Avisos previos
       if (diasNotificacion.includes(diffDias)) {
         const mensaje =
           diffDias === 0
@@ -105,7 +96,6 @@ cron.schedule("0 9 * * *", async () => {
         }
       }
 
-      // 🔸 Avisos por retraso (hasta 3 días después)
       if (diffDias < 0 && diffDias >= -3) {
         const diasPasados = Math.abs(diffDias);
         const mensaje = `⚠️ La desparasitación ${d.tipo || ""} de ${d.mascotaId.nombre} está atrasada desde hace ${diasPasados} día(s).`;

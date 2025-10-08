@@ -15,7 +15,14 @@ import EventoRoutes from "./routes/Eventos.routes.js";
 import PublicacionRoutes from "./routes/publicacion.routes.js";
 import VacunasRoutes from "./routes/vacunas.routes.js";
 import EnfermedadCronicaRoutes from "./routes/enfermedadcronica.routes.js";
-import OperacionesRoutes from "./routes/Operaciones.routes.js"
+import OperacionesRoutes from "./routes/Operaciones.routes.js";
+
+
+import PresupuestoMascotaRoutes from "./routes/presupuestoMascota.routes.js";
+import PresupuestoUsuarioRoutes from "./routes/presupuestoUsuario.routes.js";
+
+app.use("/api/presupuesto/mascota", PresupuestoMascotaRoutes);
+app.use("/api/presupuesto/usuario", PresupuestoUsuarioRoutes);
  
 const app = express();
 app.set("port", process.env.PORT || 4000);
