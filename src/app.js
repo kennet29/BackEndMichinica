@@ -18,11 +18,9 @@ import EnfermedadCronicaRoutes from "./routes/enfermedadcronica.routes.js";
 import OperacionesRoutes from "./routes/Operaciones.routes.js";
 
 
-import PresupuestoMascotaRoutes from "./routes/presupuestoMascota.routes.js";
-import PresupuestoUsuarioRoutes from "./routes/presupuestoUsuario.routes.js";
+import PresupuestoRoutes from "./routes/Presupuestos.routes.js";
 
-app.use("/api/presupuesto/mascota", PresupuestoMascotaRoutes);
-app.use("/api/presupuesto/usuario", PresupuestoUsuarioRoutes);
+
  
 const app = express();
 app.set("port", process.env.PORT || 4000);
@@ -65,5 +63,5 @@ app.use("/api/vacunas",VacunasRoutes);
 app.use("/api/enfermedades",EnfermedadCronicaRoutes);
 app.use("/api/operaciones",OperacionesRoutes);
 app.use("/api/mascotas-perdidas",MascotaperdidasRoutes)
-
+app.use("/api/presupuesto",PresupuestoRoutes);
 export default app;
