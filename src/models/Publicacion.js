@@ -7,10 +7,10 @@ const ComentarioSchema = new mongoose.Schema({
 });
 
 const PublicacionSchema = new mongoose.Schema({
-  usuarioId: { type: mongoose.Schema.Types.ObjectId, ref: "Usuario", required: true },
+  usuarioId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   contenido: { type: String },
   imagenes: [{ type: String }],
-  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Usuario" }],
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   comentarios: [ComentarioSchema],
   fecha: { type: Date, default: Date.now }
 });
