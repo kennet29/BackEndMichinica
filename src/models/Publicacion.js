@@ -1,18 +1,27 @@
 import mongoose from "mongoose";
 
-const ComentarioSchema = new mongoose.Schema({
-  usuarioId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  comentario: { type: String, required: true },
-  fecha: { type: Date, default: Date.now }
-});
-
 const PublicacionSchema = new mongoose.Schema({
-  usuarioId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  contenido: { type: String },
-  imagenes: [{ type: String }],
+  usuarioId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  contenido: { type: String, trim: true },
+  imagenes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "uploads.files", // 👈 apunta al bucket GridFS
+    },
+  ],
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  comentarios: [ComentarioSchema],
-  fecha: { type: Date, default: Date.now }
+  comentarios: [
+    {
+      usuarioId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      comentario: String,
+      fecha: { type: Date, default: Date.now },
+    },
+  ],
+  fecha: { type: Date, default: Date.now },
 });
 
 export default mongoose.model("Publicacion", PublicacionSchema);

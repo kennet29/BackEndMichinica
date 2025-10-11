@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Publicacion from "../models/Publicacion.js";
 import { getGFS } from "../database.js";
 import { Readable } from "stream";
@@ -26,51 +27,68 @@ const censurarTexto = (texto) => {
 };
 
 /**
- * 📸 Crear publicación con imágenes en GridFS
+ * =======================================
+ * 📸 CREAR PUBLICACIÓN (con imágenes)
+ * =======================================
  */
 export const crearPublicacion = async (req, res) => {
   try {
-    console.log("📥 Campos recibidos:", req.body);
-    console.log("🖼 Archivos recibidos:", req.files);
+    console.log("📥 BODY RECIBIDO:", req.body);
+    console.log("📷 FILES RECIBIDOS:", req.files);
 
-    const gfs = getGFS();
-    const imagenIds = [];
+    const { usuarioId, contenido } = req.body;
 
-    // 🔹 Censurar texto si es necesario
-    if (req.body.contenido) {
-      req.body.contenido = censurarTexto(req.body.contenido);
+    if (!usuarioId)
+      return res.status(400).json({ message: "El usuarioId es obligatorio." });
+
+    const bucket = getGFS();
+    const imagenes = [];
+
+    // 📤 Subir imágenes al bucket de GridFS
+    if (req.files && req.files.length > 0) {
+      for (const [index, file] of req.files.entries()) {
+        const uploadStream = bucket.openUploadStream(file.originalname, {
+          contentType: file.mimetype,
+        });
+
+        const readable = new Readable();
+        readable.push(file.buffer);
+        readable.push(null);
+        readable.pipe(uploadStream);
+
+        await new Promise((resolve, reject) => {
+          uploadStream.on("finish", () => {
+            const id = uploadStream.id.toString();
+            imagenes.push(id);
+            console.log(`✅ Imagen subida [${index + 1}]: ${id}`);
+            resolve();
+          });
+          uploadStream.on("error", reject);
+        });
+      }
     }
 
-    // 🔹 Subir imágenes a GridFS
-    for (const file of req.files) {
-      const stream = Readable.from(file.buffer);
-      const uploadStream = gfs.openUploadStream(file.originalname, {
-        contentType: file.mimetype,
-      });
+    // 🧹 Censurar texto si aplica
+    const textoLimpio = contenido ? censurarTexto(contenido.trim()) : "";
 
-      stream.pipe(uploadStream);
-
-      const fileId = await new Promise((resolve, reject) => {
-        uploadStream.on("finish", () => resolve(uploadStream.id.toString()));
-        uploadStream.on("error", reject);
-      });
-
-      imagenIds.push(fileId);
-    }
-
-    // 🔹 Crear publicación
-    const publicacion = new Publicacion({
-      usuarioId: req.body.usuarioId,
-      contenido: req.body.contenido,
-      imagenes: imagenIds,
+    // 💾 Guardar publicación
+    const nuevaPublicacion = new Publicacion({
+      usuarioId,
+      contenido: textoLimpio,
+      imagenes,
       fecha: new Date(),
     });
 
-    await publicacion.save();
-    res.status(201).json(publicacion);
+    await nuevaPublicacion.save();
+    console.log("🎉 Publicación guardada:", nuevaPublicacion);
+
+    res.status(201).json({
+      message: "✅ Publicación creada correctamente",
+      publicacion: nuevaPublicacion,
+    });
   } catch (error) {
     console.error("❌ Error al crear publicación:", error);
-    res.status(400).json({
+    res.status(500).json({
       message: "Error al crear publicación",
       error: error.message,
     });
@@ -78,29 +96,38 @@ export const crearPublicacion = async (req, res) => {
 };
 
 /**
- * 🖼 Obtener imagen de publicación desde GridFS
+ * =======================================
+ * 🖼 OBTENER IMAGEN DESDE GRIDFS
+ * =======================================
  */
 export const obtenerFotoPublicacion = async (req, res) => {
   try {
-    const gfs = getGFS();
-    const fileId = req.params.id;
-    const stream = gfs.openDownloadStream(fileId);
+    const { id } = req.params;
 
-    stream.on("error", () =>
-      res.status(404).json({ message: "Imagen no encontrada" })
-    );
+    if (!mongoose.Types.ObjectId.isValid(id))
+      return res.status(400).json({ message: "ID de imagen no válido" });
 
-    stream.pipe(res);
-  } catch (error) {
-    res.status(500).json({
-      message: "Error al obtener imagen",
-      error: error.message,
+    const bucket = getGFS();
+    const _id = new mongoose.Types.ObjectId(id);
+    const downloadStream = bucket.openDownloadStream(_id);
+
+    // Si el archivo no existe
+    downloadStream.on("error", (err) => {
+      console.error("⚠️ Error al leer imagen:", err.message);
+      res.status(404).json({ message: "Imagen no encontrada" });
     });
+
+    res.set("Content-Type", "image/jpeg");
+    downloadStream.pipe(res);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener imagen", error: error.message });
   }
 };
 
 /**
- * 📋 Obtener todas las publicaciones
+ * =======================================
+ * 📋 OBTENER TODAS LAS PUBLICACIONES
+ * =======================================
  */
 export const obtenerPublicaciones = async (req, res) => {
   try {
@@ -120,7 +147,9 @@ export const obtenerPublicaciones = async (req, res) => {
 };
 
 /**
- * 🔍 Obtener una publicación por ID
+ * =======================================
+ * 🔍 OBTENER PUBLICACIÓN POR ID
+ * =======================================
  */
 export const obtenerPublicacionPorId = async (req, res) => {
   try {
@@ -141,54 +170,9 @@ export const obtenerPublicacionPorId = async (req, res) => {
 };
 
 /**
- * 🗑 Eliminar publicación
- */
-export const eliminarPublicacion = async (req, res) => {
-  try {
-    const publicacion = await Publicacion.findByIdAndDelete(req.params.id);
-    if (!publicacion)
-      return res.status(404).json({ message: "Publicación no encontrada" });
-
-    res.json({ message: "Publicación eliminada correctamente" });
-  } catch (error) {
-    res.status(500).json({
-      message: "Error al eliminar publicación",
-      error: error.message,
-    });
-  }
-};
-
-/**
- * ❤️ Dar o quitar like
- */
-export const toggleLike = async (req, res) => {
-  try {
-    const { usuarioId } = req.body;
-    const publicacion = await Publicacion.findById(req.params.id);
-
-    if (!publicacion)
-      return res.status(404).json({ message: "Publicación no encontrada" });
-
-    const index = publicacion.likes.indexOf(usuarioId);
-
-    if (index === -1) {
-      publicacion.likes.push(usuarioId);
-    } else {
-      publicacion.likes.splice(index, 1);
-    }
-
-    await publicacion.save();
-    res.json({ likes: publicacion.likes.length, publicacion });
-  } catch (error) {
-    res.status(500).json({
-      message: "Error al dar o quitar like",
-      error: error.message,
-    });
-  }
-};
-
-/**
- * 💬 Agregar comentario con censura
+ * =======================================
+ * 💬 AGREGAR COMENTARIO (con censura)
+ * =======================================
  */
 export const agregarComentario = async (req, res) => {
   try {
@@ -219,7 +203,62 @@ export const agregarComentario = async (req, res) => {
 };
 
 /**
- * 🗑 Eliminar comentario
+ * =======================================
+ * ❤️ DAR / QUITAR LIKE
+ * =======================================
+ */
+export const toggleLike = async (req, res) => {
+  try {
+    const { usuarioId } = req.body;
+    const publicacion = await Publicacion.findById(req.params.id);
+
+    if (!publicacion)
+      return res.status(404).json({ message: "Publicación no encontrada" });
+
+    const index = publicacion.likes.indexOf(usuarioId);
+
+    if (index === -1) publicacion.likes.push(usuarioId);
+    else publicacion.likes.splice(index, 1);
+
+    await publicacion.save();
+
+    res.json({
+      message: index === -1 ? "👍 Like agregado" : "👎 Like eliminado",
+      likes: publicacion.likes.length,
+      publicacion,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al dar o quitar like",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * =======================================
+ * 🗑 ELIMINAR PUBLICACIÓN
+ * =======================================
+ */
+export const eliminarPublicacion = async (req, res) => {
+  try {
+    const publicacion = await Publicacion.findByIdAndDelete(req.params.id);
+    if (!publicacion)
+      return res.status(404).json({ message: "Publicación no encontrada" });
+
+    res.json({ message: "🗑 Publicación eliminada correctamente" });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al eliminar publicación",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * =======================================
+ * 🗑 ELIMINAR COMENTARIO
+ * =======================================
  */
 export const eliminarComentario = async (req, res) => {
   try {
@@ -234,7 +273,8 @@ export const eliminarComentario = async (req, res) => {
     );
 
     await publicacion.save();
-    res.json({ message: "Comentario eliminado", publicacion });
+
+    res.json({ message: "🗑 Comentario eliminado", publicacion });
   } catch (error) {
     res.status(500).json({
       message: "Error al eliminar comentario",
