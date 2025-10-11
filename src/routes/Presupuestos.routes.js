@@ -4,20 +4,24 @@ import {
   obtenerPresupuestoTotalUsuario,
   obtenerPresupuestoActual,
   cerrarPresupuestoAnterior,
+  obtenerPresupuestoDetalladoPorMascota, // ✅ importar
 } from "../controllers/Presupuesto.controller.js";
 
 const router = express.Router();
 
-// Registrar un nuevo gasto
-router.post("/gasto", registrarGasto);
+// Crear o agregar gasto
+router.post("/", registrarGasto);
 
-// Obtener presupuesto total del usuario (todas las mascotas)
+// Obtener presupuesto total del usuario
 router.get("/usuario/:usuarioId/total", obtenerPresupuestoTotalUsuario);
 
-// Obtener presupuesto del mes actual
+// Obtener presupuesto actual del usuario
 router.get("/usuario/:usuarioId/actual", obtenerPresupuestoActual);
 
-// Cerrar presupuesto del mes anterior
-router.put("/usuario/:usuarioId/cerrar", cerrarPresupuestoAnterior);
+// 🔹 Nueva ruta: presupuesto detallado por mascota
+router.get("/mascota/:usuarioId/:mascotaId", obtenerPresupuestoDetalladoPorMascota);
+
+// Cerrar presupuesto anterior
+router.put("/cerrar/:usuarioId", cerrarPresupuestoAnterior);
 
 export default router;

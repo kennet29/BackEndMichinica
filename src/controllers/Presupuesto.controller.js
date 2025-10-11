@@ -151,3 +151,51 @@ export const cerrarPresupuestoAnterior = async (req, res) => {
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
+
+
+
+// 🟣 Obtener presupuesto detallado por mascota
+export const obtenerPresupuestoDetalladoPorMascota = async (req, res) => {
+  try {
+    const { usuarioId, mascotaId } = req.params;
+
+    // Obtener el presupuesto activo del usuario (mes actual)
+    const fecha = new Date();
+    const mesActual = fecha.getMonth();
+    const anioActual = fecha.getFullYear();
+
+    const presupuesto = await Presupuesto.findOne({
+      usuarioId,
+      mes: mesActual,
+      anio: anioActual,
+    }).populate({
+      path: "gastos",
+      match: { mascotaId },
+      options: { sort: { fecha: -1 } },
+    });
+
+    if (!presupuesto) {
+      return res.status(404).json({
+        message: "No se encontró un presupuesto activo para este mes",
+        gastos: [],
+        total: 0,
+      });
+    }
+
+    // Calcular el total solo de los gastos de esa mascota
+    const gastosMascota = presupuesto.gastos || [];
+    const total = gastosMascota.reduce((acc, g) => acc + g.monto, 0);
+
+    res.status(200).json({
+      usuarioId,
+      mascotaId,
+      mes: mesActual,
+      anio: anioActual,
+      total,
+      gastos: gastosMascota,
+    });
+  } catch (error) {
+    console.error("❌ Error al obtener presupuesto detallado por mascota:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
