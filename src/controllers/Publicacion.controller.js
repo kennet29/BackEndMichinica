@@ -1,6 +1,6 @@
 import Publicacion from "../models/Publicacion.js";
 
-// 🔹 Lista básica de insultos (puedes ampliarla según necesites)
+
 const palabrasProhibidas = [
   "idiota",
   "tonto",
@@ -10,6 +10,7 @@ const palabrasProhibidas = [
   "mierda",
   "puta",
   "maldito",
+  "hp",
 ];
 
 // 🔹 Función para censurar insultos
@@ -25,12 +26,18 @@ const censurarTexto = (texto) => {
 // 📌 Crear una nueva publicación
 export const crearPublicacion = async (req, res) => {
   try {
-    // Censurar el contenido antes de guardar
+    console.log("📩 Datos recibidos:", req.body); // 👈 Agregado
+
     if (req.body.contenido) {
       req.body.contenido = censurarTexto(req.body.contenido);
     }
 
-    const publicacion = new Publicacion(req.body);
+    const publicacion = new Publicacion({
+      usuarioId: req.body.usuarioId, // ahora sí existe
+      contenido: req.body.contenido,
+      imagenes: [], // podrías guardar URLs luego si usas cloudinary o GridFS
+    });
+
     await publicacion.save();
     res.status(201).json(publicacion);
   } catch (error) {
