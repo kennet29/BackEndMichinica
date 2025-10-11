@@ -1,5 +1,5 @@
 import express from "express";
-import multer from "multer";
+import { upload } from "../database.js"; // ⚡ usa tu mismo multer-gridfs
 import {
   crearPublicacion,
   obtenerPublicaciones,
@@ -7,20 +7,34 @@ import {
   eliminarPublicacion,
   toggleLike,
   agregarComentario,
-  eliminarComentario
+  eliminarComentario,
+  obtenerFotoPublicacion, // 👈 nuevo endpoint para mostrar imagen
 } from "../controllers/Publicacion.controller.js";
 
-// 🖼 Configurar multer
-const storage = multer.memoryStorage(); // guarda archivos en memoria (no en disco)
-const upload = multer({ storage });
-
-// 📦 Usar multer para procesar campos e imágenes
 const router = express.Router();
-router.post("/", upload.any(), crearPublicacion); // 👈 procesa multipart/form-data
 
+/**
+ * 📌 Rutas de Publicaciones
+ * Base: /api/publicaciones
+ */
+
+// Crear publicación con imágenes
+router.post("/", upload.array("imagenes", 5), crearPublicacion);
+
+// Obtener todas las publicaciones
 router.get("/", obtenerPublicaciones);
+
+// Obtener una publicación por ID
 router.get("/:id", obtenerPublicacionPorId);
+
+// Obtener foto desde GridFS
+// ⚠️ importante: antes de "/:id" para evitar conflictos
+router.get("/foto/:id", obtenerFotoPublicacion);
+
+// Eliminar publicación
 router.delete("/:id", eliminarPublicacion);
+
+// Likes y comentarios
 router.post("/:id/like", toggleLike);
 router.post("/:id/comentarios", agregarComentario);
 router.delete("/:id/comentarios/:comentarioId", eliminarComentario);
