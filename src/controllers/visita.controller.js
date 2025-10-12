@@ -4,11 +4,12 @@ import Visita from "../models/Visita.js";
 // 📌 Crear visita
 export const crearVisita = async (req, res) => {
   try {
-    const { motivo, fecha, mascotaId } = req.body;
+    const { motivo, fecha, mascotaId, peso, veterinario, notas } = req.body;
 
-    if (!motivo?.trim() || !fecha || !mascotaId) {
+    // 🧩 Validaciones
+    if (!motivo?.trim() || !fecha || !mascotaId || peso === undefined || peso === null) {
       return res.status(400).json({
-        message: "El motivo, la fecha y la mascotaId son obligatorios",
+        message: "El motivo, la fecha, el peso y la mascotaId son obligatorios",
       });
     }
 
@@ -20,13 +21,29 @@ export const crearVisita = async (req, res) => {
       return res.status(400).json({ message: "Fecha no válida" });
     }
 
-    const visita = new Visita({ motivo: motivo.trim(), fecha, mascotaId });
+    if (isNaN(peso)) {
+      return res.status(400).json({ message: "Peso no válido (debe ser numérico)" });
+    }
+
+    // 🧱 Crear nueva visita con peso incluido
+    const visita = new Visita({
+      motivo: motivo.trim(),
+      fecha,
+      mascotaId,
+      peso: Number(peso),
+      veterinario: veterinario?.trim() || "",
+      notas: notas?.trim() || "",
+    });
+
     await visita.save();
+
     res.status(201).json({ message: "Visita creada con éxito", visita });
   } catch (error) {
+    console.error("❌ Error al crear visita:", error);
     res.status(400).json({ message: "Error al crear visita", error: error.message });
   }
 };
+
 
 // 📌 Obtener todas las visitas de una mascota
 export const obtenerVisitas = async (req, res) => {
