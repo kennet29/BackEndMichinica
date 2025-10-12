@@ -18,9 +18,13 @@ export const crearPublicacion = async (req, res) => {
     }
 
     const bucket = getGFS();
+    if (!bucket) {
+      return res.status(500).json({ message: "GridFS no inicializado." });
+    }
+
     const imagenesIds = [];
 
-    // 🔹 Subir imágenes al bucket GridFS
+    // ✅ Subir imágenes al bucket GridFS
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
         const uploadStream = bucket.openUploadStream(file.originalname, {
@@ -34,7 +38,7 @@ export const crearPublicacion = async (req, res) => {
 
         await new Promise((resolve, reject) => {
           uploadStream.on("finish", () => {
-            imagenesIds.push(uploadStream.id.toString());
+            imagenesIds.push(uploadStream.id); // Guarda el ObjectId real
             resolve();
           });
           uploadStream.on("error", reject);
@@ -42,22 +46,20 @@ export const crearPublicacion = async (req, res) => {
       }
     }
 
+    // ✅ Crear publicación
     const nuevaPublicacion = new Publicacion({
       contenido,
       usuarioId,
-      imagenes: imagenesIds, // 🔹 Guarda los ObjectId reales
+      imagenes: imagenesIds,
       likes: [],
       comentarios: [],
       fecha: new Date(),
     });
 
     await nuevaPublicacion.save();
-    console.log("✅ Publicación guardada:", nuevaPublicacion);
 
-    res.status(201).json({
-      message: "✅ Publicación creada correctamente",
-      publicacion: nuevaPublicacion,
-    });
+    console.log("✅ Publicación guardada correctamente:", nuevaPublicacion);
+    res.status(201).json(nuevaPublicacion);
   } catch (error) {
     console.error("❌ Error al crear publicación:", error);
     res.status(500).json({ message: "Error al crear publicación", error: error.message });
@@ -65,24 +67,7 @@ export const crearPublicacion = async (req, res) => {
 };
 
 // ============================
-// 📌 Obtener todas las publicaciones
-// ============================
-export const obtenerPublicaciones = async (req, res) => {
-  try {
-    const publicaciones = await Publicacion.find()
-      .populate("usuarioId", "username email")
-      .populate("comentarios.usuarioId", "username email")
-      .sort({ fecha: -1 });
-
-    res.json(publicaciones);
-  } catch (error) {
-    console.error("❌ Error al obtener publicaciones:", error);
-    res.status(500).json({ message: "Error al obtener publicaciones" });
-  }
-};
-
-// ============================
-// 📌 Obtener imagen desde GridFS
+// 📸 Obtener imagen desde GridFS
 // ============================
 export const obtenerFotoPublicacion = async (req, res) => {
   try {
@@ -101,6 +86,23 @@ export const obtenerFotoPublicacion = async (req, res) => {
   } catch (error) {
     console.error("❌ Error al obtener imagen:", error);
     res.status(500).json({ message: "Error al obtener imagen", error: error.message });
+  }
+};
+
+// ============================
+// 📋 Obtener todas las publicaciones
+// ============================
+export const obtenerPublicaciones = async (req, res) => {
+  try {
+    const publicaciones = await Publicacion.find()
+      .populate("usuarioId", "username email")
+      .populate("comentarios.usuarioId", "username email")
+      .sort({ fecha: -1 });
+
+    res.json(publicaciones);
+  } catch (error) {
+    console.error("❌ Error al obtener publicaciones:", error);
+    res.status(500).json({ message: "Error al obtener publicaciones" });
   }
 };
 
@@ -169,7 +171,6 @@ export const toggleLike = async (req, res) => {
 export const eliminarPublicacion = async (req, res) => {
   try {
     const { id } = req.params;
-
     const publicacion = await Publicacion.findById(id);
     if (!publicacion) {
       return res.status(404).json({ message: "Publicación no encontrada." });
