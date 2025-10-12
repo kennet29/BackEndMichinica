@@ -17,6 +17,6 @@ router.get("/:id", [verifyToken], getRoleNameById);
 
 // Nueva ruta para obtener los roles de un usuario por su ID
 router.get("/roles/:userId", getUserRolesById);
-router.put("/:userId/password", [verifyToken], updatePassword);
+router.put("/:userId/password", updatePassword);
 
 export default router;
