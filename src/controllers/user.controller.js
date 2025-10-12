@@ -1,44 +1,35 @@
 import User from "../models/User.js";
 import Role from "../models/Role.js";
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs"; // 🔒 necesario para comparar contraseñas
 
 // 📌 Crear usuario
 export const createUser = async (req, res) => {
   try {
     const { username, email, password, roles } = req.body;
 
-    // Validaciones de campos requeridos
-    if (!username || !email || !password) {
+    if (!username || !email || !password)
       return res.status(400).json({ message: "Todos los campos son obligatorios (username, email, password)" });
-    }
 
-    // Validación de formato de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(email))
       return res.status(400).json({ message: "El formato del correo electrónico no es válido" });
-    }
 
-    // Verificar si ya existe el usuario
     const userExists = await User.findOne({ $or: [{ email }, { username }] });
-    if (userExists) {
+    if (userExists)
       return res.status(409).json({ message: "El usuario o correo ya está en uso" });
-    }
 
-    // Validar roles
     let rolesToAssign = [];
     if (roles && roles.length > 0) {
       const rolesFound = await Role.find({ name: { $in: roles } });
-      if (rolesFound.length === 0) {
+      if (rolesFound.length === 0)
         return res.status(400).json({ message: "Los roles especificados no existen" });
-      }
-      rolesToAssign = rolesFound.map((role) => role._id);
+      rolesToAssign = rolesFound.map((r) => r._id);
     } else {
-      // Si no se envían roles, asignar "user" por defecto
       const defaultRole = await Role.findOne({ name: "user" });
       rolesToAssign = [defaultRole._id];
     }
 
-    // Crear usuario
     const user = new User({
       username,
       email,
@@ -55,7 +46,7 @@ export const createUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Error al crear usuario:", error);
-    res.status(500).json({ message: "Error interno del servidor" });
+    res.status(500).json({ message: "Error interno del servidor", error: error.message });
   }
 };
 
@@ -63,34 +54,26 @@ export const createUser = async (req, res) => {
 export const getUsers = async (req, res) => {
   try {
     const users = await User.find();
-    if (users.length === 0) {
-      return res.status(404).json({ message: "No hay usuarios registrados" });
-    }
-    return res.json(users);
+    if (users.length === 0) return res.status(404).json({ message: "No hay usuarios registrados" });
+    res.status(200).json(users);
   } catch (error) {
-    console.error("Error al obtener usuarios:", error);
-    res.status(500).json({ message: "Error interno del servidor" });
+    res.status(500).json({ message: "Error interno del servidor", error: error.message });
   }
 };
 
-// 📌 Obtener un usuario por ID
+// 📌 Obtener usuario por ID
 export const getUser = async (req, res) => {
   try {
     const { userId } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
+    if (!mongoose.Types.ObjectId.isValid(userId))
       return res.status(400).json({ message: "ID de usuario no válido" });
-    }
 
     const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "Usuario no encontrado" });
-    }
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
 
-    return res.json(user);
+    res.status(200).json(user);
   } catch (error) {
-    console.error("Error al obtener usuario:", error);
-    res.status(500).json({ message: "Error interno del servidor" });
+    res.status(500).json({ message: "Error interno del servidor", error: error.message });
   }
 };
 
@@ -98,23 +81,18 @@ export const getUser = async (req, res) => {
 export const getUserNames = async (req, res) => {
   try {
     const users = await User.find({}, "_id username roles").populate("roles", "_id name");
-    if (users.length === 0) {
+    if (users.length === 0)
       return res.status(404).json({ message: "No hay usuarios registrados" });
-    }
 
-    const formattedUsers = users.map((user) => ({
-      _id: user._id,
-      username: user.username,
-      roles: user.roles.map((role) => ({
-        _id: role._id,
-        name: role.name,
-      })),
+    const formatted = users.map((u) => ({
+      _id: u._id,
+      username: u.username,
+      roles: u.roles.map((r) => ({ _id: r._id, name: r.name })),
     }));
 
-    return res.status(200).json(formattedUsers);
+    res.status(200).json(formatted);
   } catch (error) {
-    console.error("Error al obtener nombres de usuario:", error);
-    res.status(500).json({ message: "Error interno del servidor" });
+    res.status(500).json({ message: "Error interno del servidor", error: error.message });
   }
 };
 
@@ -122,44 +100,37 @@ export const getUserNames = async (req, res) => {
 export const getRoleNameById = async (req, res) => {
   try {
     const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({ message: "ID de rol no válido" });
-    }
 
     const role = await Role.findById(id);
-    if (!role) {
-      return res.status(404).json({ message: "Rol no encontrado" });
-    }
+    if (!role) return res.status(404).json({ message: "Rol no encontrado" });
+
     res.status(200).json({ roleName: role.name });
   } catch (error) {
-    console.error("Error al obtener rol por ID:", error);
-    res.status(500).json({ message: "Error interno del servidor" });
+    res.status(500).json({ message: "Error interno del servidor", error: error.message });
   }
 };
 
-// 📌 Actualizar usuario
+// 📌 Actualizar usuario general (admin)
 export const updateUser = async (req, res) => {
   try {
     const { userId } = req.params;
     const { username, email, password, roles } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
+    if (!mongoose.Types.ObjectId.isValid(userId))
       return res.status(400).json({ message: "ID de usuario no válido" });
-    }
 
     const existingUser = await User.findById(userId);
-    if (!existingUser) {
+    if (!existingUser)
       return res.status(404).json({ message: "Usuario no encontrado" });
-    }
 
     let rolesToUpdate = [];
     if (roles && roles.length > 0) {
-      const rolesFound = await Role.find({ _id: { $in: roles } });
-      if (rolesFound.length !== roles.length) {
+      const found = await Role.find({ _id: { $in: roles } });
+      if (found.length !== roles.length)
         return res.status(404).json({ message: "Uno o más roles no existen" });
-      }
-      rolesToUpdate = rolesFound.map((role) => role._id);
+      rolesToUpdate = found.map((r) => r._id);
     }
 
     const updatedUser = {
@@ -170,15 +141,35 @@ export const updateUser = async (req, res) => {
     };
 
     const result = await User.findByIdAndUpdate(userId, updatedUser, { new: true });
-    return res.status(200).json({
-      _id: result._id,
-      username: result.username,
-      email: result.email,
-      roles: result.roles,
-    });
+    res.status(200).json(result);
   } catch (error) {
-    console.error("Error al actualizar usuario:", error);
-    res.status(500).json({ message: "Error interno del servidor" });
+    res.status(500).json({ message: "Error interno del servidor", error: error.message });
+  }
+};
+
+// 📌 Cambiar solo la contraseña (para perfil del usuario)
+export const updatePassword = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { password } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(userId))
+      return res.status(400).json({ message: "ID de usuario no válido" });
+
+    if (!password || password.length < 6)
+      return res.status(400).json({ message: "La contraseña debe tener al menos 6 caracteres" });
+
+    const user = await User.findById(userId);
+    if (!user)
+      return res.status(404).json({ message: "Usuario no encontrado" });
+
+    user.password = await User.encryptPassword(password);
+    await user.save();
+
+    res.status(200).json({ message: "Contraseña actualizada correctamente ✅" });
+  } catch (error) {
+    console.error("Error al actualizar contraseña:", error);
+    res.status(500).json({ message: "Error interno del servidor", error: error.message });
   }
 };
 
@@ -186,24 +177,15 @@ export const updateUser = async (req, res) => {
 export const getUserRolesById = async (req, res) => {
   try {
     const { userId } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
+    if (!mongoose.Types.ObjectId.isValid(userId))
       return res.status(400).json({ message: "ID de usuario no válido" });
-    }
 
     const user = await User.findById(userId, "roles").populate("roles", "name");
-    if (!user) {
-      return res.status(404).json({ message: "Usuario no encontrado" });
-    }
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
 
-    const userRoles = user.roles.map((role) => ({
-      _id: role._id,
-      name: role.name,
-    }));
-
-    return res.status(200).json({ roles: userRoles });
+    const roles = user.roles.map((r) => ({ _id: r._id, name: r.name }));
+    res.status(200).json({ roles });
   } catch (error) {
-    console.error("Error al obtener roles de usuario:", error);
-    res.status(500).json({ message: "Error interno del servidor" });
+    res.status(500).json({ message: "Error interno del servidor", error: error.message });
   }
 };
