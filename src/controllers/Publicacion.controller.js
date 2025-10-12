@@ -1,6 +1,6 @@
+import mongoose from "mongoose";
 import Publicacion from "../models/Publicacion.js";
 import { getGFS } from "../database.js";
-import mongoose from "mongoose";
 import { Readable } from "stream";
 
 // ============================
@@ -8,29 +8,59 @@ import { Readable } from "stream";
 // ============================
 export const crearPublicacion = async (req, res) => {
   try {
-    console.log("📤 Datos recibidos:", req.body);
-    console.log("📸 Archivos recibidos:", req.files);
+    console.log("📥 BODY RECIBIDO:", req.body);
+    console.log("📷 FILES RECIBIDOS:", req.files);
 
     const { contenido, usuarioId } = req.body;
-    const imagenes = req.files?.map((file) => file.filename) || [];
 
     if (!usuarioId) {
-      return res.status(400).json({ message: "Se requiere usuarioId." });
+      return res.status(400).json({ message: "El usuarioId es obligatorio." });
+    }
+
+    const bucket = getGFS();
+    const imagenesIds = [];
+
+    // 🔹 Subir imágenes al bucket GridFS
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const uploadStream = bucket.openUploadStream(file.originalname, {
+          contentType: file.mimetype,
+        });
+
+        const readable = new Readable();
+        readable.push(file.buffer);
+        readable.push(null);
+        readable.pipe(uploadStream);
+
+        await new Promise((resolve, reject) => {
+          uploadStream.on("finish", () => {
+            imagenesIds.push(uploadStream.id.toString());
+            resolve();
+          });
+          uploadStream.on("error", reject);
+        });
+      }
     }
 
     const nuevaPublicacion = new Publicacion({
       contenido,
       usuarioId,
-      imagenes,
+      imagenes: imagenesIds, // 🔹 Guarda los ObjectId reales
       likes: [],
       comentarios: [],
+      fecha: new Date(),
     });
 
     await nuevaPublicacion.save();
-    res.status(201).json(nuevaPublicacion);
+    console.log("✅ Publicación guardada:", nuevaPublicacion);
+
+    res.status(201).json({
+      message: "✅ Publicación creada correctamente",
+      publicacion: nuevaPublicacion,
+    });
   } catch (error) {
     console.error("❌ Error al crear publicación:", error);
-    res.status(500).json({ message: "Error al crear la publicación" });
+    res.status(500).json({ message: "Error al crear publicación", error: error.message });
   }
 };
 
@@ -42,7 +72,8 @@ export const obtenerPublicaciones = async (req, res) => {
     const publicaciones = await Publicacion.find()
       .populate("usuarioId", "username email")
       .populate("comentarios.usuarioId", "username email")
-      .sort({ createdAt: -1 }); // 🔽 Últimas primero
+      .sort({ fecha: -1 });
+
     res.json(publicaciones);
   } catch (error) {
     console.error("❌ Error al obtener publicaciones:", error);
@@ -51,28 +82,25 @@ export const obtenerPublicaciones = async (req, res) => {
 };
 
 // ============================
-// 📌 Obtener foto de publicación
+// 📌 Obtener imagen desde GridFS
 // ============================
 export const obtenerFotoPublicacion = async (req, res) => {
   try {
     const { id } = req.params;
-    const gfs = getGFS();
-
-    if (!gfs) {
-      return res.status(500).json({ message: "GridFS no está inicializado" });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID de imagen no válido" });
     }
 
-    const file = await gfs.find({ filename: id }).toArray();
+    const bucket = getGFS();
+    const _id = new mongoose.Types.ObjectId(id);
+    const downloadStream = bucket.openDownloadStream(_id);
 
-    if (!file || file.length === 0) {
-      return res.status(404).json({ message: "Imagen no encontrada" });
-    }
-
-    const readStream = gfs.openDownloadStreamByName(id);
-    readStream.pipe(res);
+    res.set("Content-Type", "image/jpeg");
+    downloadStream.on("error", () => res.status(404).json({ message: "Imagen no encontrada" }));
+    downloadStream.pipe(res);
   } catch (error) {
     console.error("❌ Error al obtener imagen:", error);
-    res.status(500).json({ message: "Error al obtener imagen" });
+    res.status(500).json({ message: "Error al obtener imagen", error: error.message });
   }
 };
 
@@ -85,9 +113,7 @@ export const agregarComentario = async (req, res) => {
     const { comentario, usuarioId } = req.body;
 
     if (!comentario || !usuarioId) {
-      return res
-        .status(400)
-        .json({ message: "Faltan datos para agregar el comentario." });
+      return res.status(400).json({ message: "Faltan datos." });
     }
 
     const publicacion = await Publicacion.findById(id);
@@ -106,37 +132,26 @@ export const agregarComentario = async (req, res) => {
 };
 
 // ============================
-// ❤️ Alternar Like / Unlike
+// ❤️ Like / Unlike
 // ============================
 export const toggleLike = async (req, res) => {
   try {
-    const { id } = req.params; // ID de la publicación
-    const { usuarioId } = req.body; // ID del usuario
-
-    if (!usuarioId) {
-      return res.status(400).json({ message: "Falta el ID del usuario." });
-    }
+    const { id } = req.params;
+    const { usuarioId } = req.body;
 
     const publicacion = await Publicacion.findById(id);
     if (!publicacion) {
       return res.status(404).json({ message: "Publicación no encontrada." });
     }
 
-    // Verificar si ya dio like
     const yaDioLike = publicacion.likes.includes(usuarioId);
-
     if (yaDioLike) {
-      // Si ya dio like, lo quitamos
-      publicacion.likes = publicacion.likes.filter(
-        (uid) => uid.toString() !== usuarioId
-      );
+      publicacion.likes = publicacion.likes.filter((uid) => uid.toString() !== usuarioId);
     } else {
-      // Si no, lo agregamos
       publicacion.likes.push(usuarioId);
     }
 
     await publicacion.save();
-
     res.json({
       success: true,
       likes: publicacion.likes.length,
@@ -144,12 +159,12 @@ export const toggleLike = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error al alternar like:", error);
-    res.status(500).json({ message: "Error interno al manejar el like." });
+    res.status(500).json({ message: "Error al manejar el like." });
   }
 };
 
 // ============================
-// 🗑️ Eliminar publicación (opcional)
+// 🗑️ Eliminar publicación
 // ============================
 export const eliminarPublicacion = async (req, res) => {
   try {
