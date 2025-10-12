@@ -6,7 +6,7 @@ import { checkExistingUser } from "../middlewares/verifySignup.js";
 const router = Router();
 
 router.post("/", [verifyToken, isAdmin, checkExistingUser], createUser);
-router.put("/:userId", [verifyToken, isAdmin], updateUser);
+router.put("/:userId", [verifyToken], updateUser);
 router.get("/info", [verifyToken], getUsers);
 router.get("/all", getUserNames);
 router.get("/:id", [verifyToken], getRoleNameById);
