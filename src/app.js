@@ -17,7 +17,7 @@ import VacunasRoutes from "./routes/vacunas.routes.js";
 import EnfermedadCronicaRoutes from "./routes/enfermedadcronica.routes.js";
 import OperacionesRoutes from "./routes/Operaciones.routes.js";
 import VisitasRoutes from "./routes/Visitas.routes.js"
-
+import VeterinariosRoutes from "./routes/RegistroVeterinario.routes.js"
 import PresupuestoRoutes from "./routes/Presupuestos.routes.js";
 
 
@@ -65,4 +65,5 @@ app.use("/api/operaciones",OperacionesRoutes);
 app.use("/api/mascotas-perdidas",MascotaperdidasRoutes)
 app.use("/api/presupuesto",PresupuestoRoutes);
 app.use("/api/visitas",VisitasRoutes);
+app.use("/api/Veterinarios",VeterinariosRoutes);
 export default app;
