@@ -8,9 +8,6 @@ import { Readable } from "stream";
 // ============================
 export const crearAdopcion = async (req, res) => {
   try {
-    console.log("📥 BODY RECIBIDO:", req.body);
-    console.log("📷 FILES RECIBIDOS:", req.files);
-
     const {
       nombre,
       especie,
@@ -22,26 +19,14 @@ export const crearAdopcion = async (req, res) => {
       usuarioId,
     } = req.body;
 
-    // 🔹 Validaciones básicas
-    if (!nombre || nombre.trim().length < 2)
-      return res.status(400).json({ message: "El nombre debe tener al menos 2 caracteres." });
-
-    if (!especie || !["perro", "gato", "conejo", "pez"].includes(especie))
-      return res.status(400).json({ message: "Especie inválida." });
-
-    if (!sexo || !["macho", "hembra"].includes(sexo))
-      return res.status(400).json({ message: "Sexo inválido." });
-
-    if (!telefono)
-      return res.status(400).json({ message: "El número de teléfono es obligatorio." });
-
-    if (!usuarioId)
-      return res.status(400).json({ message: "El usuarioId es obligatorio." });
+    if (!nombre || !especie || !sexo || !telefono || !usuarioId) {
+      return res.status(400).json({ message: "Faltan campos obligatorios." });
+    }
 
     const bucket = getGFS();
     const fotosIds = [];
 
-    // 🔹 Guardar imágenes en GridFS
+    // Guardar imágenes si hay
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
         const uploadStream = bucket.openUploadStream(file.originalname, {
@@ -63,43 +48,38 @@ export const crearAdopcion = async (req, res) => {
       }
     }
 
-    // 🔹 Crear documento
     const nuevaAdopcion = new Adopcion({
-      nombre: nombre.trim(),
+      nombre,
       especie,
       edad,
       sexo,
-      descripcion: descripcion?.trim(),
+      descripcion,
       telefono,
       correo,
       usuarioId,
       fotosIds,
-      estado: "pendiente",
-      fechaSolicitud: Date.now(),
     });
 
     await nuevaAdopcion.save();
-    console.log("🎉 Adopción guardada:", nuevaAdopcion);
-
     res.status(201).json({
       message: "✅ Solicitud de adopción creada correctamente",
       adopcion: nuevaAdopcion,
     });
   } catch (error) {
     console.error("❌ Error al crear adopción:", error);
-    res.status(500).json({ message: "Error al registrar la adopción", error: error.message });
+    res.status(500).json({ message: "Error al registrar la adopción" });
   }
 };
 
 // ============================
-// 📌 Obtener todas las solicitudes
+// 📌 Obtener todas las adopciones
 // ============================
 export const obtenerAdopciones = async (req, res) => {
   try {
     const adopciones = await Adopcion.find().populate("usuarioId", "nombre correo");
-    res.json(adopciones);
+    res.json(adopciones || []);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener adopciones", error: error.message });
+    res.status(500).json({ message: "Error al obtener adopciones" });
   }
 };
 
@@ -112,12 +92,12 @@ export const obtenerAdopcionesPorUsuario = async (req, res) => {
     const adopciones = await Adopcion.find({ usuarioId });
     res.json(adopciones);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener adopciones del usuario", error: error.message });
+    res.status(500).json({ message: "Error al obtener adopciones del usuario" });
   }
 };
 
 // ============================
-// 📌 Actualizar estado de la adopción
+// 📌 Actualizar estado de adopción (pendiente/aprobada)
 // ============================
 export const actualizarEstadoAdopcion = async (req, res) => {
   try {
@@ -132,9 +112,9 @@ export const actualizarEstadoAdopcion = async (req, res) => {
 
     if (!adopcion) return res.status(404).json({ message: "Adopción no encontrada" });
 
-    res.json({ message: "✅ Estado actualizado", adopcion });
+    res.json({ message: "✅ Estado actualizado correctamente", adopcion });
   } catch (error) {
-    res.status(500).json({ message: "Error al actualizar adopción", error: error.message });
+    res.status(500).json({ message: "Error al actualizar adopción" });
   }
 };
 
@@ -150,7 +130,7 @@ export const eliminarAdopcion = async (req, res) => {
 
     res.json({ message: "🗑️ Adopción eliminada correctamente" });
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar adopción", error: error.message });
+    res.status(500).json({ message: "Error al eliminar adopción" });
   }
 };
 
@@ -172,6 +152,6 @@ export const obtenerFotoAdopcion = async (req, res) => {
     res.set("Content-Type", "image/jpeg");
     downloadStream.pipe(res);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener imagen", error: error.message });
+    res.status(500).json({ message: "Error al obtener imagen" });
   }
 };

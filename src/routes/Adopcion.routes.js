@@ -13,13 +13,13 @@ const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Crear nueva adopción con imágenes
+// Crear nueva adopción
 router.post("/", upload.array("fotos"), crearAdopcion);
 
-// Obtener todas las adopciones
+// Obtener todas
 router.get("/", obtenerAdopciones);
 
-// Obtener adopciones por usuario
+// Obtener por usuario
 router.get("/usuario/:usuarioId", obtenerAdopcionesPorUsuario);
 
 // Actualizar estado (pendiente/aprobada)
